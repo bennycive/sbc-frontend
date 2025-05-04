@@ -1,1 +1,146 @@
-<p>dashboard works!</p>
+<div class="container-fluid p-4">
+  <h2 class="fw-bold mb-4">Dashboard</h2>
+
+  <!-- GRADUATE STUDENT -->
+  <div *ngIf="currentUserRole === 'student' || currentUserRole === 'admin'">
+    <div class="row g-4 mb-4">
+      <div class="col-md-4" *ngFor="let card of [
+          { title: 'Transcript Requests', value: 3, icon: 'bi bi-journal-text' },
+          { title: 'Certificates Ready', value: 2, icon: 'bi bi-file-earmark-check' },
+          { title: 'Biometric Status', value: 'Completed', icon: 'bi bi-fingerprint' }
+        ]">
+        <div class="card summary-card h-100 shadow-sm">
+          <div class="card-body">
+            <h5><i [class]="card.icon + ' me-2 text-primary'"></i>{{ card.title }}</h5>
+            <p class="fs-5 fw-semibold">{{ card.value }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transcript Request Table -->
+    <div class="card mb-4">
+      <div class="card-header">Recent Transcript Requests</div>
+      <div class="card-body p-0">
+        <table class="table table-hover table-sm">
+          <thead>
+            <tr><th>ID</th><th>Date</th><th>Purpose</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let req of transcriptRequests">
+              <td>{{ req.requestId }}</td>
+              <td>{{ req.date }}</td>
+              <td>{{ req.purpose }}</td>
+              <td>{{ req.status }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Certificate Collection Table -->
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        Certificate Collections
+        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#transcriptModal">
+          Request Transcript
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover table-sm">
+          <thead>
+            <tr><th>ID</th><th>Date</th><th>Type</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let cert of certificateCollections">
+              <td>{{ cert.certificateId }}</td>
+              <td>{{ cert.date }}</td>
+              <td>{{ cert.type }}</td>
+              <td>{{ cert.status }}</td>
+              <td><button class="btn btn-sm btn-outline-info">View</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOD -->
+  <div *ngIf="currentUserRole === 'hod' || currentUserRole === 'admin'">
+    <div class="row g-4 mb-4">
+      <div class="col-md-4" *ngFor="let hodCard of [
+          { title: 'Classes', value: 5, icon: 'bi bi-easel' },
+          { title: 'Departments', value: 3, icon: 'bi bi-building' },
+          { title: 'Students', value: 240, icon: 'bi bi-people' }
+        ]">
+        <div class="card summary-card h-100 shadow-sm">
+          <div class="card-body">
+            <h5><i [class]="hodCard.icon + ' me-2 text-success'"></i>{{ hodCard.title }}</h5>
+            <p class="fs-5 fw-semibold">{{ hodCard.value }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-header">Transcript Requests for Verification</div>
+      <div class="card-body p-0">
+        <table class="table table-sm table-hover">
+          <thead><tr><th>Student</th><th>Course</th><th>Date</th></tr></thead>
+          <tbody><tr *ngFor="let r of verifiedRecords"><td>{{r.student}}</td><td>{{r.course}}</td><td>{{r.date}}</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- BURSAR -->
+  <div *ngIf="currentUserRole === 'bursar' || currentUserRole === 'admin'">
+    <div class="row g-4 mb-4">
+      <div class="col-md-3" *ngFor="let bursarCard of [
+          { title: 'All Requests', value: 120, icon: 'bi bi-envelope' },
+          { title: 'Pending', value: 35, icon: 'bi bi-clock-history' },
+          { title: 'Completed', value: 70, icon: 'bi bi-check-circle' },
+          { title: 'Rejected', value: 15, icon: 'bi bi-x-circle' }
+        ]">
+        <div class="card summary-card h-100 shadow-sm border-start">
+          <div class="card-body">
+            <h6><i [class]="bursarCard.icon + ' me-2 text-primary'"></i>{{ bursarCard.title }}</h6>
+            <p class="fs-5 fw-bold mb-0">{{ bursarCard.value }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Verified Financial Table -->
+    <div class="card mb-4">
+      <div class="card-header">Verified Financial Records</div>
+      <div class="card-body p-0">
+        <table class="table table-sm table-hover">
+          <thead><tr><th>Student</th><th>Amount</th><th>Date</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let record of verifiedFinancials">
+              <td>{{record.student}}</td>
+              <td>{{record.amount}}</td>
+              <td>{{record.date}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHARED CHART VISUALIZATION -->
+  <div *ngIf="['admin', 'hod', 'bursar'].includes(currentUserRole)" class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span>Request Trends</span>
+      <select class="form-select w-auto" [(ngModel)]="filterBy">
+        <option value="daily">Day to Day</option>
+        <option value="monthly">Monthly</option>
+        <option value="yearly">Yearly</option>
+      </select>
+    </div>
+    <div class="card-body">
+      <canvas id="requestChart" height="100"></canvas>
+    </div>
+  </div>
+</div>
