@@ -2,7 +2,7 @@
   <h2 class="fw-bold mb-4">Dashboard</h2>
 
   <!-- GRADUATE STUDENT -->
-  <div *ngIf="currentUserRole === 'student' || currentUserRole === 'admin'">
+  <div *ngIf="currentUserRole === 'student'">
     <div class="row g-4 mb-4">
       <div class="col-md-4" *ngFor="let card of [
           { title: 'Transcript Requests', value: 3, icon: 'bi bi-journal-text' },
@@ -17,6 +17,7 @@
         </div>
       </div>
     </div>
+
 
     <!-- Transcript Request Table -->
     <div class="card mb-4">
@@ -66,7 +67,7 @@
   </div>
 
   <!-- HOD -->
-  <div *ngIf="currentUserRole === 'hod' || currentUserRole === 'admin'">
+  <div *ngIf="currentUserRole === 'hod'">
     <div class="row g-4 mb-4">
       <div class="col-md-4" *ngFor="let hodCard of [
           { title: 'Classes', value: 5, icon: 'bi bi-easel' },
@@ -94,7 +95,7 @@
   </div>
 
   <!-- BURSAR -->
-  <div *ngIf="currentUserRole === 'bursar' || currentUserRole === 'admin'">
+  <div *ngIf="currentUserRole === 'bursar'">
     <div class="row g-4 mb-4">
       <div class="col-md-3" *ngFor="let bursarCard of [
           { title: 'All Requests', value: 120, icon: 'bi bi-envelope' },
@@ -128,6 +129,87 @@
       </div>
     </div>
   </div>
+
+
+
+  <!-- ADMIN DASHBOARD VIEW -->
+<div *ngIf="currentUserRole === 'admin'">
+  <!-- HOD-like Cards -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-4" *ngFor="let hodCard of [
+        { title: 'Classes', value: 5, icon: 'bi bi-easel' },
+        { title: 'Departments', value: 3, icon: 'bi bi-building' },
+        { title: 'Students', value: 240, icon: 'bi bi-people' }
+      ]">
+      <div class="card summary-card h-100 shadow-sm">
+        <div class="card-body">
+          <h5><i [class]="hodCard.icon + ' me-2 text-success'"></i>{{ hodCard.title }}</h5>
+          <p class="fs-5 fw-semibold">{{ hodCard.value }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bursar-like Cards -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-3" *ngFor="let bursarCard of [
+        { title: 'All Requests', value: 120, icon: 'bi bi-envelope' },
+        { title: 'Pending', value: 35, icon: 'bi bi-clock-history' },
+        { title: 'Completed', value: 70, icon: 'bi bi-check-circle' },
+        { title: 'Rejected', value: 15, icon: 'bi bi-x-circle' }
+      ]">
+      <div class="card summary-card h-100 shadow-sm border-start">
+        <div class="card-body">
+          <h6><i [class]="bursarCard.icon + ' me-2 text-primary'"></i>{{ bursarCard.title }}</h6>
+          <p class="fs-5 fw-bold mb-0">{{ bursarCard.value }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Additional Admin Components (e.g., Chart or Table) -->
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span>System-Wide Request Trends</span>
+      <select class="form-select w-auto" [(ngModel)]="filterBy">
+        <option value="daily">Day to Day</option>
+        <option value="monthly">Monthly</option>
+        <option value="yearly">Yearly</option>
+      </select>
+    </div>
+    <div class="card-body">
+      <canvas id="adminChart" height="100"></canvas>
+    </div>
+  </div>
+
+  <!-- Example Table -->
+  <div class="card">
+    <div class="card-header">
+      Recent Activity
+    </div>
+    <div class="card-body table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Request ID</th>
+            <th>User</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let activity of recentActivities">
+            <td>{{ activity.id }}</td>
+            <td>{{ activity.user }}</td>
+            <td><span [class]="'badge bg-' + activity.statusClass">{{ activity.status }}</span></td>
+            <td>{{ activity.date | date:'short' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 
   <!-- SHARED CHART VISUALIZATION -->
   <div *ngIf="['admin', 'hod', 'bursar'].includes(currentUserRole)" class="card mb-4">

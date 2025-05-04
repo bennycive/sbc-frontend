@@ -10,7 +10,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class DashboardComponent {
 
-  currentUserRole: 'student' | 'hod' | 'bursar' | 'admin' = 'bursar';
+  currentUserRole: '' |'student' | 'hod' | 'bursar' | 'admin' = 'student';
 
   //  dashboard contents
   summaryCards = [
@@ -47,6 +47,13 @@ export class DashboardComponent {
   certificateCollections = [
     { certificateId: 201, date: '2025-04-03', type: 'Degree Certificate', status: 'Ready' },
     { certificateId: 202, date: '2025-04-05', type: 'Diploma', status: 'Processing' }
+  ];
+
+
+  recentActivities = [
+    { id: 'REQ001', user: 'John Doe', status: 'Pending', statusClass: 'warning', date: new Date() },
+    { id: 'REQ002', user: 'Jane Smith', status: 'Completed', statusClass: 'success', date: new Date() },
+    { id: 'REQ003', user: 'Bob Marley', status: 'Rejected', statusClass: 'danger', date: new Date() }
   ];
 
 
