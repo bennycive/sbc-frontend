@@ -1,0 +1,12 @@
+.bg-edu {
+  background-color: #f0f4ff;
+}
+
+.card {
+  border-radius: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}

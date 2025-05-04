@@ -1,0 +1,27 @@
+<app-header></app-header>
+
+<div class="min-vh-100 bg-edu text-dark py-5">
+  <div class="container text-center mb-5">
+    <h1 class="fw-bold display-5">Welcome to SBCS</h1>
+    <p class="lead text-muted">A smart system for managing student requests with ease</p>
+    <!-- <a routerLink="/auth/login" class="btn btn-primary btn-lg mt-3">Login</a> -->
+  </div>
+
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-md-4" *ngFor="let service of services">
+        <div class="card h-100 shadow-sm text-center p-3">
+          <div class="card-body">
+            <div class="mb-3 text-primary">
+              <i [class]="service.icon" style="font-size: 2rem;"></i>
+            </div>
+            <h5 class="card-title fw-bold">{{ service.title }}</h5>
+            <p class="card-text text-muted">{{ service.description }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>
