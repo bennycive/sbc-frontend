@@ -21,6 +21,7 @@
     "@angular/platform-server": "^19.1.0",
     "@angular/router": "^19.1.0",
     "@angular/ssr": "^19.1.2",
+    "angular-datatables": "^19.0.0",
     "bootstrap": "^5.3.5",
     "bootstrap-icons": "^1.12.1",
     "chart.js": "^4.4.9",
