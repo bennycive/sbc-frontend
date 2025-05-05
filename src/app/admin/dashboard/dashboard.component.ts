@@ -10,7 +10,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class DashboardComponent {
 
-  currentUserRole: '' |'student' | 'hod' | 'bursar' | 'admin' = 'student';
+  currentUserRole: '' |'student' | 'hod' | 'bursar' | 'admin' = 'admin';
 
   //  dashboard contents
   summaryCards = [

@@ -40,15 +40,16 @@ export class LandingComponent {
       icon: 'bi bi-search'
     },
     {
-      title: 'Track Requests',
-      description: 'Monitor the status of all your submitted requests.',
-      icon: 'bi bi-search'
+      title: 'Bimetric Verification',
+      description: 'Biometric verifications requests.',
+      icon: 'bi bi-fingerprint'
     }
 
 
 
-  ];
 
+
+  ];
 
 
 }

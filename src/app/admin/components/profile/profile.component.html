@@ -1,0 +1,14 @@
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h4><i class="bi bi-person-lines-fill me-2"></i> User Profile</h4>
+    </div>
+    <div class="card-body">
+      <p><strong>Name:</strong> {{ user.name }}</p>
+      <p><strong>Email:</strong> {{ user.email }}</p>
+      <p><strong>Phone:</strong> {{ user.phone }}</p>
+      <p><strong>Role:</strong> {{ user.role }}</p>
+      <button class="btn btn-warning mt-3" (click)="editProfile()">Update Profile</button>
+    </div>
+  </div>
+</div>

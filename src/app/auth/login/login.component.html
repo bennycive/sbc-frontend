@@ -1,31 +1,35 @@
-<app-header> </app-header>
 
-<div class="min-vh-100 d-flex justify-content-center align-items-center bg-edu">
-  <div class="card p-4 shadow" style="max-width: 400px; width: 100%; border-radius: 1rem;">
-    <div class="text-center mb-4">
-      <img src="assets/logo/udom_logo2.png" alt="BS Logo" class="rounded-circle" style="width: 80px; height: 80px;">
-      <h3 class="mt-3 fw-bold text-primary">BS</h3>
-      <p class="text-muted">Biometric System Login</p>
+<!-- Remove <app-header> and <app-footer> to match UDOM page -->
+  <div class="vh-100 d-flex justify-content-center align-items-center" style="background: linear-gradient(135deg, #f0f2f5, #d9e4f5);">
+    <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px; border-radius: 12px;">
+
+      <div class="text-center mb-4">
+        <img src="assets/logo/udom_logo2.png" alt="UDOM Logo" style="width: 100px; height: 100px;">
+        <h4 class="mt-3 text-dark fw-bold">University of Dodoma</h4>
+        <small class="text-muted">Biometric System</small>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="login()">
+        <div class="form-group mb-3">
+          <label for="username" class="form-label">Username</label>
+          <input type="text" id="username" class="form-control" formControlName="username" placeholder="Enter username">
+        </div>
+
+        <div class="form-group mb-4">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" id="password" class="form-control" formControlName="password" placeholder="Enter password">
+        </div>
+
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary" [disabled]="loginForm.invalid">Login</button>
+        </div>
+
+        <div *ngIf="loginError" class="alert alert-danger mt-3">
+          {{ loginError }}
+        </div>
+      </form>
+
     </div>
-
-    <form>
-      <div class="mb-3">
-        <label for="username" class="form-label">Username</label>
-        <input type="text" id="username" class="form-control" placeholder="Enter username">
-      </div>
-
-      <div class="mb-3">
-        <label for="password" class="form-label">Password</label>
-        <input type="password" id="password" class="form-control" placeholder="Enter password">
-      </div>
-
-      <div class="d-grid gap-2 mt-4 mb-3">
-        <button type="submit" class="btn btn-primary">Login</button>
-      </div>
-    </form>
-
   </div>
-</div>
 
 
-<app-footer></app-footer>
