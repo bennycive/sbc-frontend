@@ -12,7 +12,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideClientHydration(withEventReplay()),
-    provideHttpClient(withInterceptors([TokenInterceptor])), // if you're using interceptor
-    importProvidersFrom(ReactiveFormsModule) // ✅ register reactive forms
+    provideHttpClient(withInterceptors([TokenInterceptor])), 
+    importProvidersFrom(ReactiveFormsModule)
   ]
 };

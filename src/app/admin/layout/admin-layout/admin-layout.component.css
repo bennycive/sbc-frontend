@@ -1,0 +1,57 @@
+/* 1. Make the outer container full-width & avoid horizontal scroll */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* 2. Sidebar styling */
+.sidebar {
+  background-color: #022548;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 250px;               /* default width */
+  transition: width 0.3s;
+  overflow: hidden;
+  z-index: 1000;
+}
+
+/* hidden state */
+.sidebar.d-none {
+  width: 0 !important;
+}
+
+/* 3. Push the main content over when sidebar is visible */
+.main-content {
+  margin-left: 250px;         /* match sidebar width */
+  flex-grow: 1;
+  transition: margin-left 0.3s;
+}
+
+/* when sidebar is hidden */
+.main-content.sidebar-hidden {
+  margin-left: 0;
+}
+
+/* 4. Header styling */
+header.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 900;               /* below sidebar */
+  background: white;
+  border-bottom: 1px solid #ececec;
+}
+
+/* 5. Make sure your router-outlet area fills the rest */
+main.p-4 {
+  padding-top: 1rem;          /* leave room for header if sticky */
+}
+
+/* 6. Active & hover link styles (you already have these) */
+.nav-link.active,
+.nav-link:hover {
+  background-color: #0d6efd;
+  color: #fff !important;
+}

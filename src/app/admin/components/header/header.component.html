@@ -1,6 +1,28 @@
-<nav class="navbar navbar-light bg-light justify-content-between px-4">
-  <h5 class="navbar-brand mb-0">Dashboard</h5>
-  <div>
-    <img src="assets/logo/udom_logo2.png" alt="Logo" class="rounded-circle" width="40">
+<nav class="navbar navbar-expand-lg navbar-light bg-light px-4 py-2 shadow-sm">
+  <div class="container-fluid d-flex justify-content-between align-items-center">
+
+    <!-- Left section: Toggle + Username -->
+    <div class="d-flex align-items-center">
+      <!-- Sidebar Toggle Button (only visible on small screens) -->
+      <button id="sidebarToggle" class="btn btn-outline-secondary me-3 cursor-pointer" (click)="toggleSidebarMenu()">
+        <i class="bi bi-list"></i>
+      </button>
+
+    </div>
+
+    <!-- Right section: Academic info + logo + logout -->
+    <div class="d-flex align-items-center gap-4">
+     
+      <img
+        src="assets/logo/udom_logo2.png"
+        alt="Logo"
+        class="rounded-circle"
+        width="40"
+      />
+
+      <a class="nav-link text-gray pointer-hand" (click)="logout()">
+        <i class="bi bi-box-arrow-right"></i> Logout
+      </a>
+    </div>
   </div>
 </nav>

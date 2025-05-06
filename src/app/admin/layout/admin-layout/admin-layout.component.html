@@ -1,7 +1,21 @@
-<div class="d-flex" style="min-height: 100vh;">
-  <app-sidebar></app-sidebar>
-  <div class="flex-grow-1">
-    <app-header></app-header>
+<div class="app-container">
+  <!-- Sidebar -->
+  <div
+    class="sidebar"
+    [ngClass]="{ 'd-none': isSidebarHidden }">
+    <app-sidebar></app-sidebar>
+  </div>
+
+  <!-- Main + Header -->
+  <div
+    class="main-content"
+    [class.sidebar-hidden]="isSidebarHidden">
+    <!-- Header -->
+    <header class="app-header">
+      <app-header (toggleSidebar)="toggleSidebar()"></app-header>
+    </header>
+
+    <!-- Page body -->
     <main class="p-4">
       <router-outlet></router-outlet>
     </main>

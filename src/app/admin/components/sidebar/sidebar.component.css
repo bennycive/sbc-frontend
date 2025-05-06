@@ -6,5 +6,9 @@
 
 .sidebar{
    background-color: #022548;
+   transition: width 0.3s;
+   overflow: hidden;
+   position:fixed;
 }
+
 
