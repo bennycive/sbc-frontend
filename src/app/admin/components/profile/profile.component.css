@@ -1,0 +1,28 @@
+.profile-img-wrapper {
+  width: 150px;
+  height: 150px;
+  padding: 5px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #00f2fe, #4facfe, #00f2fe);
+  animation: glow 2s linear infinite;
+}
+
+.profile-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 4px solid white;
+  object-fit: cover;
+}
+
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 5px #00f2fe, 0 0 10px #4facfe;
+  }
+  50% {
+    box-shadow: 0 0 20px #00f2fe, 0 0 40px #4facfe;
+  }
+  100% {
+    box-shadow: 0 0 5px #00f2fe, 0 0 10px #4facfe;
+  }
+}

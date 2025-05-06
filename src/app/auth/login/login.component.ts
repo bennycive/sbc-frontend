@@ -42,7 +42,7 @@ export class LoginComponent {
         localStorage.setItem('access_token', res.access);
         localStorage.setItem('refresh_token', res.refresh);
         localStorage.setItem('user', JSON.stringify(res.user));
-        this.router.navigate(['/dashboard']); 
+        this.router.navigate(['/dashbord']); 
       },
       error: (err) => {
         this.loginError = 'Invalid username or password.';

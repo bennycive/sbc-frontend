@@ -34,6 +34,12 @@ logout() {
   this.router.navigate(['/auth/login']);
 }
 
+profile(){
+  this.router.navigate(['/dashbord/profile']);
+  
+  
+}
+
 
 }
 

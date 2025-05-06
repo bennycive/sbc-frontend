@@ -2,7 +2,7 @@
  
  <!-- Add justify-content-center to horizontally center -->
 <div class="d-flex justify-content-center my-4">
-  <a href="#" class="d-flex align-items-center text-white text-decoration-none">
+  <a  href="/dashiboard" class="d-flex align-items-center text-white text-decoration-none">
     <img
       src="assets/logo/profile2.jpeg"
       alt="profile"
@@ -21,37 +21,37 @@
   <!-- Sidebar Menu -->
   <ul class="nav nav-pills flex-column mb-auto">
     <li class="nav-item" *ngIf="currentUserRole === 'admin' || currentUserRole === 'bursar'">
-      <a routerLink="/admin" class="nav-link text-white">
+      <a href="/dashiboard" class="nav-link text-dark">
         <i class="bi bi-speedometer2 me-2"></i> Dashboard
       </a>
     </li>
 
     <li *ngIf="currentUserRole === 'admin' || currentUserRole === 'hod'">
-      <a routerLink="/admin/verify-records" class="nav-link text-white">
+      <a href="/dashiboard/verify-records" class="nav-link text-white">
         <i class="bi bi-patch-check me-2"></i> Verify Records
       </a>
     </li>
 
     <li>
-      <a routerLink="/admin/profile" class="nav-link text-white">
+      <a  class="nav-link text-white" (click)="profile()" >
         <i class="bi bi-person me-2"></i> Profile
       </a>
     </li>
 
     <li *ngIf="currentUserRole === 'student'">
-      <a routerLink="/admin/request-transcripts" class="nav-link text-white">
+      <a href="/dashiboard/request-transcripts"  class="nav-link text-white" >
         <i class="bi bi-journal-text me-2"></i> Request Transcripts
       </a>
     </li>
 
     <li *ngIf="currentUserRole === 'bursar' || currentUserRole === 'admin'">
-      <a routerLink="/admin/certificates" class="nav-link text-white">
+      <a href="/dashiboard/certificates" class="nav-link text-white">
         <i class="bi bi-award me-2"></i> Certificates
       </a>
     </li>
 
     <li *ngIf="currentUserRole === 'admin'">
-      <a routerLink="/admin/biometric-setups" class="nav-link text-white">
+      <a href="/dashiboard/biometric-setups" class="nav-link text-white">
         <i class="bi bi-fingerprint me-2"></i> Biometric Setups
       </a>
     </li>
@@ -64,7 +64,7 @@
     </li>
 
   </ul>
-
+ 
   <hr>
   <div class="text-center small">
     <span>&copy; 2025 FYP</span>
