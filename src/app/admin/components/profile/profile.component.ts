@@ -11,10 +11,12 @@ import { FormsModule } from '@angular/forms'; // ✅ Import FormsModule
 })
 export class ProfileComponent {
   user = {
-    firstName: 'Jane',
-    lastName: 'Doe',
+    firstName: 'Janet',
+    lastName: 'Joel',
+    middleName: 'Mussa',
     email: 'jane@example.com',
     phone: '+255123456789',
+    nin: '1997120134607000334',
     birthday: '',
     gender: '',
     address: '',
@@ -24,6 +26,20 @@ export class ProfileComponent {
     image: ''
   };
   
+  isReadonly = true;
+  disabled=true;
+
+  enableEdit() {
+    this.isReadonly = false;
+    this.disabled=false;
+  }
+
+  save() {
+    this.isReadonly = true;
+    console.log('User saved:', this.user);
+     
+  }
+
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
@@ -32,9 +48,5 @@ export class ProfileComponent {
       reader.readAsDataURL(file);
     }
   }
-  
 
-  updateProfile() {
-    alert('Profile updated!');
-  }
 }
