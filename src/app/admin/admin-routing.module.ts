@@ -5,6 +5,7 @@ import { AdminLayoutComponent } from './layout/admin-layout/admin-layout.compone
 import { ProfileComponent } from './components/profile/profile.component';
 import { CertificateRequestsComponent } from './components/certificate-requests/certificate-requests.component';
 import { CertificateAndIdsListComponent } from './components/certificate-and-ids-list/certificate-and-ids-list.component';
+import { UsersComponent } from './components/users/users.component';
 
 
 const routes: Routes = [
@@ -17,7 +18,9 @@ const routes: Routes = [
       { path: '', component: DashboardComponent },
       { path: 'profile', component: ProfileComponent },
       { path: 'certificates-requests', component : CertificateRequestsComponent },
-      { path: 'certificates-and-ids-list', component: CertificateAndIdsListComponent}
+      { path: 'certificates-and-ids-list', component: CertificateAndIdsListComponent},
+      { path: 'users', component: UsersComponent },
+      
 
     ]
 

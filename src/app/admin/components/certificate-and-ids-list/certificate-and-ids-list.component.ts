@@ -2,6 +2,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import Swal from 'sweetalert2';
 
 interface Certificate {
   id: number;
@@ -86,6 +87,7 @@ export class CertificateAndIdsListComponent implements OnInit {
         name: formValue.name
       });
       this.closePanel();
+      Swal.fire('Added!', 'Certificate has been added.', 'success');
     }
   }
 
@@ -97,10 +99,24 @@ export class CertificateAndIdsListComponent implements OnInit {
         name: formValue.name
       });
       this.closePanel();
+      Swal.fire('Updated!', 'Certificate has been updated.', 'success');
     }
   }
 
   deleteCertificate(id: number) {
-    this.certificates = this.certificates.filter(c => c.id !== id);
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'You won\'t be able to revert this!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.certificates = this.certificates.filter(c => c.id !== id);
+        Swal.fire('Deleted!', 'Certificate has been deleted.', 'success');
+      }
+    });
   }
 }

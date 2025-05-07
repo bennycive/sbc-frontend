@@ -21,8 +21,14 @@
   <!-- Sidebar Menu -->
   <ul class="nav nav-pills flex-column mb-auto">
     <li class="nav-item" *ngIf="currentUserRole === 'admin' || currentUserRole === 'bursar'">
-      <a href="/dashiboard" class="nav-link text-dark">
+      <a href="/dashbord" class="nav-link text-light">
         <i class="bi bi-speedometer2 me-2"></i> Dashboard
+      </a>
+    </li>
+
+    <li *ngIf="currentUserRole === 'admin'">
+      <a class="nav-link text-white" (click)="registerUsers()">
+        <i class="bi bi-person-plus"></i> Users
       </a>
     </li>
 
@@ -50,7 +56,8 @@
       </a>
     </li>
 
-    <li *ngIf="currentUserRole === 'admin'">
+
+    <li *ngIf="currentUserRole === 'student'">
       <a href="/dashiboard/biometric-setups" class="nav-link text-white">
         <i class="bi bi-fingerprint me-2"></i> Biometric Setups
       </a>

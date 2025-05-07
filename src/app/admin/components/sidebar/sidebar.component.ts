@@ -14,7 +14,7 @@ import { AuthService } from '../../../auth/auth.service';
 })
 export class SidebarComponent {
  
-  currentUserRole: '' | 'student' | 'hod' | 'bursar' | 'admin' | 'admin'='student';
+  currentUserRole: '' | 'student' | 'hod' | 'bursar' | 'admin' | 'admin'='admin';
 
   user: any = null;
 
@@ -50,6 +50,12 @@ requestAcademicCertificates(){
 //  add the ids 
 addCertificateAndIds(){
   this.router.navigate(['/dashbord/certificates-and-ids-list']);
+}
+
+
+registerUsers()
+{
+  this.router.navigate(['/dashbord/users']);
 }
 
 

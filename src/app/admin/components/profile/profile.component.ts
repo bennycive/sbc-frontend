@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms'; // ✅ Import FormsModule
-
+import Swal from 'sweetalert2';
 @Component({
   selector: 'app-profile',
   standalone: true, // ✅ Ensure this is present if using standalone components
@@ -37,10 +37,18 @@ export class ProfileComponent {
   save() {
     this.isReadonly = true;
     console.log('User saved:', this.user);
-     
+  
+    Swal.fire({
+      icon: 'success',
+      title: 'Profile Saved',
+      text: 'Your profile has been successfully updated!',
+      confirmButtonColor: '#3085d6',
+      confirmButtonText: 'OK'
+    });
   }
+  
 
-  onFileSelected(event: any) {
+   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
@@ -49,4 +57,6 @@ export class ProfileComponent {
     }
   }
 
+
 }
+
