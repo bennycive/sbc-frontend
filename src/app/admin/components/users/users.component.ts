@@ -103,25 +103,25 @@ export class UsersComponent {
   generatePdfReport() {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
-  
+
     const logoUrl = 'assets/logo/udom_logo2.png';
     const img = new Image();
     img.src = logoUrl;
-  
+
     img.onload = () => {
-      // Add logo (left) with some spacing from top
-      doc.addImage(img, 'PNG', 14, 10, 25, 25); // 25x25 size, adjust if needed
-  
-      // Set Times New Roman (or closest equivalent)
+      const now = new Date();
+      const printedAt = `Printed at ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.toLocaleDateString('en-GB')}`;
+
+      // Add logo
+      doc.addImage(img, 'PNG', 14, 10, 25, 25);
+
       doc.setFont('times', 'bold');
       doc.setFontSize(14);
-  
       const centerX = pageWidth / 2;
-  
-      // Headings
+
       const heading1 = 'THE UNIVERSITY OF DODOMA';
       const heading2 = 'TRANSCRIPT AND CERTIFICATE COLLECTION SYSTEM';
-      
+
       let reportType = '';
       if (this.filterRole === 'student') {
         reportType = 'STUDENT REPORT';
@@ -130,16 +130,14 @@ export class UsersComponent {
       } else {
         reportType = 'USER REPORT';
       }
-  
-      // Draw centered heading (below the logo height + a bit of padding)
+
       doc.text(heading1.toUpperCase(), centerX, 18, { align: 'center' });
       doc.setFontSize(12);
       doc.setFont('times', 'normal');
       doc.text(heading2.toUpperCase(), centerX, 25, { align: 'center' });
       doc.setFont('times', 'bold');
       doc.text(reportType.toUpperCase(), centerX, 32, { align: 'center' });
-  
-      // Prepare table data
+
       const tableData = this.filteredUsers.map(user => [
         user.firstName + ' ' + user.lastName,
         user.email,
@@ -147,8 +145,7 @@ export class UsersComponent {
         user.department,
         user.phone,
       ]);
-  
-      // Create table without background color and with borders
+
       autoTable(doc, {
         startY: 40,
         head: [['Name', 'Email', 'Role', 'Department', 'Phone']],
@@ -159,27 +156,51 @@ export class UsersComponent {
           halign: 'left',
           valign: 'middle',
           lineWidth: 0.1,
-          lineColor: [0, 0, 0], // Black border
+          lineColor: [0, 0, 0],
         },
         headStyles: {
-          fillColor: [255, 255, 255], // White background
-          textColor: [0, 0, 0],       // Black text
+          fillColor: [255, 255, 255],
+          textColor: [0, 0, 0],
           lineWidth: 0.1,
           lineColor: [0, 0, 0],
           fontStyle: 'bold'
         },
-        theme: 'grid', // Adds borders
+        theme: 'grid',
+        didDrawPage: (data) => {
+          const pageWidth = doc.internal.pageSize.getWidth();
+          const pageHeight = doc.internal.pageSize.getHeight();
+          const footerY = pageHeight - 10;
+
+          const printedAt = `Printed at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ${new Date().toLocaleDateString('en-GB')}`;
+
+          doc.setFontSize(10);
+          doc.setFont('times', 'normal');
+
+          // Left: printed time
+          doc.text(printedAt, 14, footerY);
+
+          // Center: Page x of y
+          
+
+          // Right: U number of page
+          doc.text('Udom', pageWidth - 14, footerY, { align: 'center' });
+          doc.text(`Page ${data.pageNumber} of ${doc.getNumberOfPages()}`, pageWidth / 2, footerY, { align: 'right' });
+
+        }
+
+
       });
-  
+
       doc.save(`${reportType.toLowerCase().replace(' ', '_')}.pdf`);
     };
-  
+
     img.onerror = () => {
       Swal.fire('Error', 'Failed to load logo image.', 'error');
     };
   }
-  
-  
+
+
+
 
   resetForm() {
     this.userForm.reset();
