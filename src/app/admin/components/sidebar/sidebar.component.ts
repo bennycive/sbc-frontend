@@ -14,7 +14,7 @@ import { AuthService } from '../../../auth/auth.service';
 })
 export class SidebarComponent {
  
-  currentUserRole: '' | 'student' | 'hod' | 'bursar' | 'admin' | 'admin'='admin';
+  currentUserRole: '' | 'student' | 'hod' | 'bursar' | 'admin' | 'admin'='student';
 
   user: any = null;
 
@@ -57,6 +57,14 @@ registerUsers()
 {
   this.router.navigate(['/dashbord/users']);
 }
+
+
+// biometric setup
+biometricSetup()
+{
+   this.router.navigate(['dashbord/biometric-setups'])
+}
+
 
 
 }

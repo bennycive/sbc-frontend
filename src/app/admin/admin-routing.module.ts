@@ -6,6 +6,7 @@ import { ProfileComponent } from './components/profile/profile.component';
 import { CertificateRequestsComponent } from './components/certificate-requests/certificate-requests.component';
 import { CertificateAndIdsListComponent } from './components/certificate-and-ids-list/certificate-and-ids-list.component';
 import { UsersComponent } from './components/users/users.component';
+import { BiometricSetupComponent } from './components/biometric-setup/biometric-setup.component';
 
 
 const routes: Routes = [
@@ -20,7 +21,9 @@ const routes: Routes = [
       { path: 'certificates-requests', component : CertificateRequestsComponent },
       { path: 'certificates-and-ids-list', component: CertificateAndIdsListComponent},
       { path: 'users', component: UsersComponent },
+      { path: 'biometric-setups', component: BiometricSetupComponent},
       
+
 
     ]
 

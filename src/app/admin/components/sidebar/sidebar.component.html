@@ -58,7 +58,7 @@
 
 
     <li *ngIf="currentUserRole === 'student'">
-      <a href="/dashiboard/biometric-setups" class="nav-link text-white">
+      <a class="nav-link text-white"(click)="biometricSetup()" >
         <i class="bi bi-fingerprint me-2"></i> Biometric Setups
       </a>
     </li>

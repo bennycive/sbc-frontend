@@ -12,7 +12,7 @@ import { AuthService } from '../../auth/auth.service';
 })
 export class DashboardComponent {
 
-  currentUserRole: string = 'admin'; 
+  currentUserRole: string = 'student'; 
 
   filterBy: string = 'daily'; 
 
@@ -21,7 +21,7 @@ export class DashboardComponent {
 
   constructor(private router: Router, private authService: AuthService) {
     this.user = this.authService.getUser();
-    
+
   }
   
 

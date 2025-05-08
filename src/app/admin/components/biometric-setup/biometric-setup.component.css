@@ -1,0 +1,17 @@
+.finger-icon-wrapper {
+  font-size: 64px;
+  color: #6c757d;
+  transition: all 0.3s ease;
+}
+
+.finger-icon-wrapper.success {
+  color: #198754; /* Bootstrap green */
+}
+
+
+.finger-icon-wrapper i {
+  font-size: 5rem;
+  color: #0d6efd;
+
+}
+

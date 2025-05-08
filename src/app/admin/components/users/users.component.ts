@@ -175,15 +175,10 @@ export class UsersComponent {
 
           doc.setFontSize(10);
           doc.setFont('times', 'normal');
-
           // Left: printed time
           doc.text(printedAt, 14, footerY);
-
-          // Center: Page x of y
-          
-
           // Right: U number of page
-          doc.text('Udom', pageWidth - 14, footerY, { align: 'center' });
+          doc.text('UDOM', pageWidth - 14, footerY, { align: 'center' });
           doc.text(`Page ${data.pageNumber} of ${doc.getNumberOfPages()}`, pageWidth / 2, footerY, { align: 'right' });
 
         }
