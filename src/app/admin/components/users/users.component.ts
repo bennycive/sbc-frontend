@@ -9,6 +9,7 @@ import { PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
 
+
 @Component({
   selector: 'app-users',
   standalone: true,
@@ -19,8 +20,13 @@ import { isPlatformBrowser } from '@angular/common';
 export class UsersComponent {
 
 
+
+  //  server error
+  serverErrors: string[] = [];
+
+
   userForm: FormGroup;
-  roles: string[] = ['student', 'admin', 'hod', 'dean','bursar','principal'];
+  roles: string[] = ['student', 'admin', 'hod','bursar','exam-officer'];
   departments: string[] = ['ICT', 'CSE', 'ETE', 'IST'];
   users: any[] = [];
   filteredUsers: any[] = [];
@@ -37,7 +43,9 @@ export class UsersComponent {
       role: ['', Validators.required],
       department: ['', Validators.required],
       is_active: [false],
+
     });
+
   }
 
 
@@ -71,28 +79,48 @@ export class UsersComponent {
   }
 
 
-
-
-
   onSubmit() {
-    if (this.userForm.invalid) {
-      return;
-    }
-
-    // Register new user
-    const formData = this.userForm.value;
-
-    this.http.post('http://localhost:8000/api/register/', formData).subscribe(
-      response => {
-        Swal.fire('Registered!', 'New user registered successfully.', 'success');
-        this.resetForm();
-        this.loadUsers();
-      },
-      error => {
-        Swal.fire('Error', 'There was an error registering the user.', 'error');
-      }
-    );
+  if (this.userForm.invalid) {
+    return;
   }
+
+  const formData = this.userForm.value;
+
+  this.http.post('http://localhost:8000/api/register/', formData).subscribe(
+    response => {
+      Swal.fire('Registered!', 'New user registered successfully.', 'success');
+      this.resetForm();
+      this.loadUsers();
+    },
+    error => {
+      if (error.status === 400 && error.error) {
+        let errorMessages = '';
+
+        for (const key in error.error) {
+          if (error.error.hasOwnProperty(key)) {
+            const messages = error.error[key];
+            if (Array.isArray(messages)) {
+              messages.forEach((msg: string) => {
+                errorMessages += `${msg}<br>`;
+              });
+            } else {
+              errorMessages += `${messages}<br>`;
+            }
+          }
+        }
+
+        Swal.fire({
+          icon: 'error',
+          title: 'Validation Error',
+          html: errorMessages
+        });
+      } else {
+        Swal.fire('Error', 'There was an unexpected error registering the user.', 'error');
+      }
+    }
+  );
+}
+
 
   onEdit(index: number) {
     this.editingIndex = index;
@@ -167,15 +195,17 @@ export class UsersComponent {
 
       const tableData = this.filteredUsers.map(user => [
         user.first_name + ' ' + user.last_name,
+        user.username,
         user.email,
         user.role,
         user.department,
         user.phone,
+
       ]);
 
       autoTable(doc, {
         startY: 40,
-        head: [['Name', 'Email', 'Role', 'Department', 'Phone']],
+        head: [['Name','Username', 'Email', 'Role', 'Department']],
         body: tableData,
         styles: {
           font: 'times',
@@ -220,4 +250,5 @@ export class UsersComponent {
     this.userForm.reset();
     this.editingIndex = null;
   }
+
 }
