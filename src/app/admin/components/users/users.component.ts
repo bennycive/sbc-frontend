@@ -21,18 +21,23 @@ export class UsersComponent {
 
 
 
-  //  server error
+
   serverErrors: string[] = [];
+
+  selectedUserId: number | null = null;
+  editingIndex: number | null = null;
+
 
 
   userForm: FormGroup;
-  roles: string[] = ['student', 'admin', 'hod','bursar','exam-officer'];
+  roles: string[] = ['student', 'admin', 'hod', 'bursar', 'exam-officer'];
   departments: string[] = ['ICT', 'CSE', 'ETE', 'IST'];
   users: any[] = [];
   filteredUsers: any[] = [];
   filterRole: string = '';
   filterDepartment: string = '';
-  editingIndex: number | null = null;
+
+
 
   constructor(private fb: FormBuilder, private http: HttpClient, @Inject(PLATFORM_ID) private platformId: any) {
     this.userForm = this.fb.group({
@@ -42,6 +47,7 @@ export class UsersComponent {
       username: ['', Validators.required],
       role: ['', Validators.required],
       department: ['', Validators.required],
+      password:['', Validators.required],
       is_active: [false],
 
     });
@@ -79,53 +85,103 @@ export class UsersComponent {
   }
 
 
+
+
   onSubmit() {
-  if (this.userForm.invalid) {
-    return;
+  if (this.userForm.invalid) return;
+
+  const formData = this.cleanFormData(this.userForm.value);
+
+  if (this.selectedUserId) {
+    this.updateUser(formData);
+  } else {
+    this.createUser(formData);
   }
+}
 
-  const formData = this.userForm.value;
+cleanFormData(data: any): any {
+  const cleanedData: any = {};
+  for (const key in data) {
+    if (data.hasOwnProperty(key)) {
+      cleanedData[key] = typeof data[key] === 'string' ? data[key].trim() : data[key];
+    }
+  }
+  return cleanedData;
+}
 
-  this.http.post('http://localhost:8000/api/register/', formData).subscribe(
+updateUser(data: any) {
+  this.http.put(`http://localhost:8000/api/update/users/${this.selectedUserId}/`, data).subscribe(
+    response => {
+      Swal.fire('Updated!', 'User updated successfully.', 'success');
+      this.resetForm();
+      this.loadUsers();
+      this.selectedUserId = null;
+      this.editingIndex = null;
+    },
+    error => this.handleFormError(error, 'updating')
+  );
+}
+
+createUser(data: any) {
+  this.http.post('http://localhost:8000/api/register/', data).subscribe(
     response => {
       Swal.fire('Registered!', 'New user registered successfully.', 'success');
       this.resetForm();
       this.loadUsers();
     },
-    error => {
-      if (error.status === 400 && error.error) {
-        let errorMessages = '';
-
-        for (const key in error.error) {
-          if (error.error.hasOwnProperty(key)) {
-            const messages = error.error[key];
-            if (Array.isArray(messages)) {
-              messages.forEach((msg: string) => {
-                errorMessages += `${msg}<br>`;
-              });
-            } else {
-              errorMessages += `${messages}<br>`;
-            }
-          }
-        }
-
-        Swal.fire({
-          icon: 'error',
-          title: 'Validation Error',
-          html: errorMessages
-        });
-      } else {
-        Swal.fire('Error', 'There was an unexpected error registering the user.', 'error');
-      }
-    }
+    error => this.handleFormError(error, 'registering')
   );
 }
 
+handleFormError(error: any, action: string) {
+  if (error.status === 400 && error.error) {
+    let errorMessages = '';
+
+    for (const key in error.error) {
+      if (error.error.hasOwnProperty(key)) {
+        const messages = error.error[key];
+        if (Array.isArray(messages)) {
+          messages.forEach((msg: string) => {
+            errorMessages += `${msg}<br>`;
+          });
+        } else {
+          errorMessages += `${messages}<br>`;
+        }
+      }
+    }
+
+    Swal.fire({
+      icon: 'error',
+      title: 'Validation Error',
+      html: errorMessages
+    });
+  } else {
+    Swal.fire('Error', `Unexpected error occurred while ${action} the user.`, 'error');
+  }
+}
+
+
 
   onEdit(index: number) {
+    const user = this.filteredUsers[index];
     this.editingIndex = index;
-    this.userForm.patchValue(this.users[index]);
+    this.selectedUserId = user.id;
+
+    this.userForm.patchValue({
+      first_name: user.first_name,
+      last_name: user.last_name,
+      email: user.email,
+      username: user.username,
+      role: user.role,
+      password: user.password,
+      department: user.department,
+      is_active: user.is_active,
+
+    });
+
+
   }
+
 
   onDelete(index: number) {
     this.users.splice(index, 1);
@@ -205,7 +261,7 @@ export class UsersComponent {
 
       autoTable(doc, {
         startY: 40,
-        head: [['Name','Username', 'Email', 'Role', 'Department']],
+        head: [['Name', 'Username', 'Email', 'Role', 'Department']],
         body: tableData,
         styles: {
           font: 'times',
@@ -246,9 +302,14 @@ export class UsersComponent {
     };
   }
 
+
+
   resetForm() {
     this.userForm.reset();
+    this.selectedUserId = null;
     this.editingIndex = null;
   }
+
+
 
 }

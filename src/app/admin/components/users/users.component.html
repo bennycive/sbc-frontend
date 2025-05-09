@@ -30,13 +30,19 @@
          </div>
          <div class="col-md-6">
            <label>Username</label>
-           <input formControlName="username" class="form-control" />
+           <input formControlName="username" class="form-control"  placeholder="eg . T-23-1234 OR Mussa" />
            <div *ngIf="f['username'].touched && f['username'].invalid" class="text-danger">Required</div>
          </div>
        </div>
 
        <!-- Role -->
        <div class="row mb-3">
+         <div class="col-md-6">
+           <label>Password</label>
+           <input formControlName="password" class="form-control" />
+           <div *ngIf="f['password'].touched && f['password'].invalid" class="text-danger">Password Required</div>
+         </div>
+
          <div class="col-md-6">
            <label>Role</label>
            <select formControlName="role" class="form-select">
@@ -74,8 +80,6 @@
      </form>
    </div>
  </div>
-
-
 
    <!-- Users Table -->
    <div class="card">

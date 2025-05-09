@@ -4,6 +4,8 @@ import { ChartConfiguration } from 'chart.js';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
+
+
 @Component({
   selector: 'app-dashboard',
   imports: [CommonModule,FormsModule],
@@ -12,7 +14,7 @@ import { AuthService } from '../../auth/auth.service';
 })
 export class DashboardComponent {
 
-  currentUserRole: string = 'admin'; 
+ currentUserRole: '' | 'student' | 'hod' | 'bursar' | 'admin' | 'admin'='';
 
   filterBy: string = 'daily';
 
@@ -25,15 +27,17 @@ export class DashboardComponent {
   }
 
 
+
   ngOnInit(): void {
     this.formattedDate = this.getFormattedDate();
     this.user = this.authService.getUser();
+    this.currentUserRole = this.user?.role || '';
+
   }
 
 
 
   @Output() toggleSidebar = new EventEmitter<void>();
-
 
 
   getFormattedDate(): string {
@@ -104,5 +108,5 @@ export class DashboardComponent {
   ];
 
 
-
+  
 }

@@ -14,7 +14,7 @@ import { AuthService } from '../../../auth/auth.service';
 })
 export class SidebarComponent {
 
-  currentUserRole: '' | 'student' | 'hod' | 'bursar' | 'admin' | 'admin'='admin';
+  currentUserRole: '' | 'student' | 'hod' | 'bursar' | 'admin' | 'admin'='';
 
   user: any = null;
 
@@ -24,8 +24,7 @@ constructor(private router: Router,private authService: AuthService) {
 
 ngOnInit(): void {
   this.user = this.authService.getUser();
-  // this.currentUserRole = this.user?.role || '';
-
+  this.currentUserRole = this.user?.role || '';
 }
 
 logout() {
@@ -33,6 +32,7 @@ logout() {
   localStorage.removeItem('refresh_token');
   localStorage.removeItem('user');
   this.router.navigate(['/auth/login']);
+
 }
 
 //  profile informations for all users

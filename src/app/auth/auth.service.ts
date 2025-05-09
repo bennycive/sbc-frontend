@@ -13,11 +13,14 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router) {}
 
+
+
   login(username: string, password: string) {
     return this.http.post(this.apiUrl, { username, password });
   }
 
   saveUserData(token: string, refresh: string, user: any) {
+  
     localStorage.setItem('access_token', token);
     localStorage.setItem('refresh_token', refresh);
     localStorage.setItem('user', JSON.stringify(user));
@@ -28,8 +31,8 @@ export class AuthService {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;
   }
-  
-  
+
+
 
   getToken() {
     return localStorage.getItem('access_token');

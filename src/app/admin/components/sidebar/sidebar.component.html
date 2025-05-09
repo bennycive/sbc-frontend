@@ -1,5 +1,5 @@
 <div class="sidebar text-white d-flex flex-column p-3" style="width: 250px; height: 100vh;">
- 
+
  <!-- Add justify-content-center to horizontally center -->
 <div class="d-flex justify-content-center my-4">
   <a  href="/dashbord" class="d-flex align-items-center text-white text-decoration-none">
@@ -13,14 +13,14 @@
   </a>
 </div>
 
-  
+
   <span class="text-center"><strong>{{ user?.username || 'Guest' }}</strong></span>
 
   <hr>
 
   <!-- Sidebar Menu -->
   <ul class="nav nav-pills flex-column mb-auto">
-    <li class="nav-item" *ngIf="currentUserRole === 'admin' || currentUserRole === 'bursar'">
+    <li class="nav-item">
       <a href="/dashbord" class="nav-link text-light">
         <i class="bi bi-speedometer2 me-2"></i> Dashboard
       </a>
@@ -71,7 +71,7 @@
     </li>
 
   </ul>
- 
+
   <hr>
   <div class="text-center small">
     <span>&copy; 2025 FYP</span>

@@ -8,7 +8,10 @@ import { AuthService } from '../../../auth/auth.service';
   templateUrl: './header.component.html',
   styleUrl: './header.component.css'
 })
+
 export class HeaderComponent {
+
+  currentUserRole: '' | 'student' | 'hod' | 'bursar' | 'admin' | 'admin'='';
 
   formattedDate: string = '';
   user: any = null;
@@ -20,12 +23,11 @@ export class HeaderComponent {
   }
 
   ngOnInit(): void {
-    this.user = this.authService.getUser();
-   
-  
+   this.user = this.authService.getUser();
+   this.currentUserRole = this.user?.role || '';
   }
 
-  
+
 
   logout(): void {
     localStorage.removeItem('access_token');
@@ -34,7 +36,7 @@ export class HeaderComponent {
     this.router.navigate(['/auth/login']);
   }
 
-  // ✅ This method was missing
+
   toggleSidebarMenu(): void {
     this.toggleSidebar.emit();
   }
