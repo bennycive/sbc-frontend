@@ -4,66 +4,94 @@ import { CommonModule } from '@angular/common';
 import Swal from 'sweetalert2';
 import { jsPDF } from 'jspdf';
 import { autoTable } from 'jspdf-autotable';  // Ensure this line is included
+import { HttpClientModule, HttpClient } from '@angular/common/http';
+import { PLATFORM_ID, Inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+
 
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, HttpClientModule],
   templateUrl: './users.component.html',
   styleUrls: ['./users.component.css'],
 })
 export class UsersComponent {
+
+
   userForm: FormGroup;
-  roles: string[] = ['student', 'staff'];
-  departments: string[] = ['Engineering', 'Science', 'Business', 'Arts'];
+  roles: string[] = ['student', 'admin', 'hod', 'dean','bursar','principal'];
+  departments: string[] = ['ICT', 'CSE', 'ETE', 'IST'];
   users: any[] = [];
   filteredUsers: any[] = [];
   filterRole: string = '';
   filterDepartment: string = '';
   editingIndex: number | null = null;
 
-  // Adding title and logo variables
-  title: string = 'THE UNIVERSITY OF DODOMA';
-  logoUrl: string = 'assets/logo/udom_logo2.png';  // Path to your logo image
-
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private http: HttpClient, @Inject(PLATFORM_ID) private platformId: any) {
     this.userForm = this.fb.group({
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
+      first_name: ['', Validators.required],
+      last_name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      phone: ['', Validators.required],
+      username: ['', Validators.required],
       role: ['', Validators.required],
       department: ['', Validators.required],
-      registrationNumber: [''],
-      level: [''],
-      program: [''],
-      faculty: [''],
-      employeeId: [''],
-      designation: [''],
+      is_active: [false],
     });
   }
+
 
   get f() {
     return this.userForm.controls;
   }
+
+  ngOnInit() {
+    this.loadUsers();
+
+    if (isPlatformBrowser(this.platformId)) {
+      setTimeout(async () => {
+        const jQuery = (await import('jquery')).default;
+        (window as any).$ = (window as any).jQuery = jQuery;
+        await import('datatables.net');
+        await import('datatables.net-bs5');
+
+        jQuery(function () {
+          jQuery('#example').DataTable();
+        });
+      }, 0);
+    }
+  }
+
+
+  loadUsers() {
+    this.http.get<any[]>('http://localhost:8000/api/users').subscribe(data => {
+      this.users = data;
+      this.filterUsers();
+    });
+  }
+
+
+
+
 
   onSubmit() {
     if (this.userForm.invalid) {
       return;
     }
 
-    if (this.editingIndex !== null) {
-      // Update existing user
-      this.users[this.editingIndex] = this.userForm.value;
-      Swal.fire('Updated!', 'User information updated successfully.', 'success');
-    } else {
-      // Register new user
-      this.users.push(this.userForm.value);
-      Swal.fire('Registered!', 'New user registered successfully.', 'success');
-    }
+    // Register new user
+    const formData = this.userForm.value;
 
-    this.resetForm();
-    this.filterUsers();
+    this.http.post('http://localhost:8000/api/register/', formData).subscribe(
+      response => {
+        Swal.fire('Registered!', 'New user registered successfully.', 'success');
+        this.resetForm();
+        this.loadUsers();
+      },
+      error => {
+        Swal.fire('Error', 'There was an error registering the user.', 'error');
+      }
+    );
   }
 
   onEdit(index: number) {
@@ -99,22 +127,21 @@ export class UsersComponent {
     this.filteredUsers = tempUsers;
   }
 
+  //  REPORT GENERATION PART
+  title: string = 'THE UNIVERSITY OF DODOMA';
+  logoUrl: string = 'assets/logo/udom_logo2.png';
 
   generatePdfReport() {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
-
-    const logoUrl = 'assets/logo/udom_logo2.png';
     const img = new Image();
-    img.src = logoUrl;
+    img.src = this.logoUrl;
 
     img.onload = () => {
       const now = new Date();
       const printedAt = `Printed at ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.toLocaleDateString('en-GB')}`;
 
-      // Add logo
       doc.addImage(img, 'PNG', 14, 10, 25, 25);
-
       doc.setFont('times', 'bold');
       doc.setFontSize(14);
       const centerX = pageWidth / 2;
@@ -139,7 +166,7 @@ export class UsersComponent {
       doc.text(reportType.toUpperCase(), centerX, 32, { align: 'center' });
 
       const tableData = this.filteredUsers.map(user => [
-        user.firstName + ' ' + user.lastName,
+        user.first_name + ' ' + user.last_name,
         user.email,
         user.role,
         user.department,
@@ -175,15 +202,10 @@ export class UsersComponent {
 
           doc.setFontSize(10);
           doc.setFont('times', 'normal');
-          // Left: printed time
           doc.text(printedAt, 14, footerY);
-          // Right: U number of page
           doc.text('UDOM', pageWidth - 14, footerY, { align: 'center' });
           doc.text(`Page ${data.pageNumber} of ${doc.getNumberOfPages()}`, pageWidth / 2, footerY, { align: 'right' });
-
         }
-
-
       });
 
       doc.save(`${reportType.toLowerCase().replace(' ', '_')}.pdf`);
@@ -193,9 +215,6 @@ export class UsersComponent {
       Swal.fire('Error', 'Failed to load logo image.', 'error');
     };
   }
-
-
-
 
   resetForm() {
     this.userForm.reset();

@@ -12,9 +12,9 @@ import { AuthService } from '../../auth/auth.service';
 })
 export class DashboardComponent {
 
-  currentUserRole: string = 'student'; 
+  currentUserRole: string = 'admin'; 
 
-  filterBy: string = 'daily'; 
+  filterBy: string = 'daily';
 
   formattedDate: string = '';
   user: any = null;
@@ -23,7 +23,7 @@ export class DashboardComponent {
     this.user = this.authService.getUser();
 
   }
-  
+
 
   ngOnInit(): void {
     this.formattedDate = this.getFormattedDate();

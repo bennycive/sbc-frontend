@@ -13,8 +13,8 @@ import { AuthService } from '../../../auth/auth.service';
   styleUrl: './sidebar.component.css'
 })
 export class SidebarComponent {
- 
-  currentUserRole: '' | 'student' | 'hod' | 'bursar' | 'admin' | 'admin'='student';
+
+  currentUserRole: '' | 'student' | 'hod' | 'bursar' | 'admin' | 'admin'='admin';
 
   user: any = null;
 
@@ -35,19 +35,19 @@ logout() {
   this.router.navigate(['/auth/login']);
 }
 
-//  profile informations for all users 
+//  profile informations for all users
 profile(){
   this.router.navigate(['/dashbord/profile']);
 
-  
+
 }
 
-// Request all academic cerificates 
+// Request all academic cerificates
 requestAcademicCertificates(){
   this.router.navigate(['/dashbord/certificates-requests']);
 }
 
-//  add the ids 
+//  add the ids
 addCertificateAndIds(){
   this.router.navigate(['/dashbord/certificates-and-ids-list']);
 }
