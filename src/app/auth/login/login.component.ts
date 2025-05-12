@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -43,7 +44,7 @@ export class LoginComponent {
 
 
 
-    this.http.post<any>('http://localhost:8000/api/token/', loginData).subscribe({
+    this.http.post<any>(`${environment.apiBaseUrl}/token/`, loginData).subscribe({
       next: (res) => {
 
         localStorage.setItem('access_token', res.access);
@@ -52,7 +53,7 @@ export class LoginComponent {
         this.currentUserRole = res.user.role;
         this.router.navigate(['/dashbord']);
 
-        
+
       },
       error: (err) => {
         this.loginError = 'Invalid username or password.';

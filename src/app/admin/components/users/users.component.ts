@@ -7,6 +7,7 @@ import { autoTable } from 'jspdf-autotable';  // Ensure this line is included
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { environment } from '../../../../environments/environment';
 
 
 
@@ -78,11 +79,14 @@ export class UsersComponent {
 
 
   loadUsers() {
-    this.http.get<any[]>('http://localhost:8000/api/users').subscribe(data => {
+    
+    this.http.get<any[]>(`${environment.apiBaseUrl}/users`).subscribe(data => {
       this.users = data;
       this.filterUsers();
     });
+
   }
+
 
 
 
