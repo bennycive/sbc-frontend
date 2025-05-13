@@ -67,6 +67,11 @@ biometricSetup()
 }
 
 
+//  financial verification
+financiaVerification(){
+   this.router.navigate(['/dashbord/financial-verifications'])
+}
+
 
 }
 

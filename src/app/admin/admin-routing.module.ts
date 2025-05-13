@@ -7,6 +7,7 @@ import { CertificateRequestsComponent } from './components/certificate-requests/
 import { CertificateAndIdsListComponent } from './components/certificate-and-ids-list/certificate-and-ids-list.component';
 import { UsersComponent } from './components/users/users.component';
 import { BiometricSetupComponent } from './components/biometric-setup/biometric-setup.component';
+import { FinancialVerificationsComponent } from './components/financial-verifications/financial-verifications.component';
 
 
 const routes: Routes = [
@@ -22,10 +23,11 @@ const routes: Routes = [
       { path: 'certificates-and-ids-list', component: CertificateAndIdsListComponent},
       { path: 'users', component: UsersComponent },
       { path: 'biometric-setups', component: BiometricSetupComponent},
-      
+      { path: 'financial-verifications', component: FinancialVerificationsComponent},
 
 
     ]
+
 
   }
 
@@ -36,4 +38,5 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
+
 export class AdminRoutingModule { }

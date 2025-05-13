@@ -1,0 +1,100 @@
+<div class="container mt-5">
+    <!-- Panel for Pending Financial Verifications -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Pending Financial Verifications</h3>
+        </div>
+        <div class="panel-body">
+            <!-- Responsive Table for Pending Verifications -->
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Student Name</th>
+                            <th>Matriculation Number</th>
+                            <th>Amount Due</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Loop through your data here -->
+                        <tr>
+                            <td>1</td>
+                            <td>MLAWA Shonde</td>
+                            <td>mlawa</td>
+                            <td>1500</td>  <!-- Replace with the actual amount due -->
+                            <td>
+                                <button class="btn btn-success btn-sm " onclick="verifyRequest(1)">Verify</button>
+                                <button class="btn btn-danger btn-sm" onclick="rejectRequest(1)">Reject</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>ALBANUS NJAU</td>
+                            <td>T22-03-00941</td>
+                            <td>2000</td>  <!-- Replace with the actual amount due -->
+                            <td>
+                                <button class="btn btn-success btn-sm" onclick="verifyRequest(2)">Verify</button>
+                                <button class="btn btn-danger btn-sm" onclick="rejectRequest(2)">Reject</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td>ADMIN Admin</td>
+                            <td>udom</td>
+                            <td>3000</td>  <!-- Replace with the actual amount due -->
+                            <td>
+                                <button class="btn btn-success btn-sm" onclick="verifyRequest(6)">Verify</button>
+                                <button class="btn btn-danger btn-sm" onclick="rejectRequest(6)">Reject</button>
+                            </td>
+                        </tr>
+                        <!-- Additional rows for other pending verifications -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel for Verified Financial Records -->
+    <div class="panel panel-default mt-4">
+        <div class="panel-heading">
+            <h3 class="panel-title">Verified Financial Records</h3>
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Student Name</th>
+                            <th>Verification Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Example for Verified Record -->
+                        <tr>
+                            <td>1</td>
+                            <td>Jane Smith</td>
+                            <td>2025-05-10</td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript functions for handling actions -->
+<script>
+    function verifyRequest(requestId) {
+        alert('Request ID ' + requestId + ' has been verified!');
+        // Logic to move data to the Verified section
+    }
+
+    function rejectRequest(requestId) {
+        alert('Request ID ' + requestId + ' has been rejected!');
+        // Logic to remove the rejected request
+    }
+</script>
