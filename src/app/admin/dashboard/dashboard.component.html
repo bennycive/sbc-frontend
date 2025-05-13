@@ -184,47 +184,7 @@
     </div>
   </div>
 
-  <!-- Additional Admin Components (e.g., Chart or Table) -->
-  <div class="card mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <span>System-Wide Request Trends</span>
-      <select class="form-select w-auto" [(ngModel)]="filterBy">
-        <option value="daily">Day to Day</option>
-        <option value="monthly">Monthly</option>
-        <option value="yearly">Yearly</option>
-      </select>
-    </div>
-    <div class="card-body">
-      <canvas id="adminChart" height="100"></canvas>
-    </div>
-  </div>
 
-  <!-- Example Table -->
-  <div class="card">
-    <div class="card-header">
-      Recent Activity
-    </div>
-    <div class="card-body table-responsive">
-      <table class="table table-hover">
-        <thead>
-          <tr>
-            <th>Request ID</th>
-            <th>User</th>
-            <th>Status</th>
-            <th>Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let activity of recentActivities">
-            <td>{{ activity.id }}</td>
-            <td>{{ activity.user }}</td>
-            <td><span [class]="'badge bg-' + activity.statusClass">{{ activity.status }}</span></td>
-            <td>{{ activity.date | date:'short' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
 </div>
 
 

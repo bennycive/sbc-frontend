@@ -25,6 +25,7 @@ constructor(private router: Router,private authService: AuthService) {
 ngOnInit(): void {
   this.user = this.authService.getUser();
   this.currentUserRole = this.user?.role || '';
+
 }
 
 logout() {

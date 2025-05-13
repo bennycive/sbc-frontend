@@ -79,8 +79,8 @@ export class UsersComponent {
 
 
   loadUsers() {
-    
-    this.http.get<any[]>(`${environment.apiBaseUrl}/users`).subscribe(data => {
+
+    this.http.get<any[]>(`${environment.apiBaseUrl}/users/users/`).subscribe(data => {
       this.users = data;
       this.filterUsers();
     });
@@ -114,7 +114,7 @@ cleanFormData(data: any): any {
 }
 
 updateUser(data: any) {
-  this.http.put(`http://localhost:8000/api/update/users/${this.selectedUserId}/`, data).subscribe(
+  this.http.put(`${environment.apiBaseUrl}/users/users/${this.selectedUserId}/`, data).subscribe(
     response => {
       Swal.fire('Updated!', 'User updated successfully.', 'success');
       this.resetForm();
@@ -127,7 +127,7 @@ updateUser(data: any) {
 }
 
 createUser(data: any) {
-  this.http.post('http://localhost:8000/api/register/', data).subscribe(
+  this.http.post(`${environment.apiBaseUrl}/users/users/`, data).subscribe(
     response => {
       Swal.fire('Registered!', 'New user registered successfully.', 'success');
       this.resetForm();
