@@ -66,10 +66,15 @@ biometricSetup()
    this.router.navigate(['dashbord/biometric-setups'])
 }
 
-
 //  financial verification
 financiaVerification(){
    this.router.navigate(['/dashbord/financial-verifications'])
+}
+
+verifyRecords(){
+
+   this.router.navigate(['/dashbord/verify-records'])
+
 }
 
 

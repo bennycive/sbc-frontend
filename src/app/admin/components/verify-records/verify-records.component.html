@@ -1,0 +1,160 @@
+<div class="container my-4">
+  <h2 class="mb-4 text-muted">Verify Student Records</h2>
+
+  <!-- Filter Section -->
+  <div class="row mb-4 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label">Filter by Date</label>
+      <select class="form-select" [(ngModel)]="filterOption" (change)="applyFilter()">
+        <option value="all">All</option>
+        <option value="day">Today</option>
+        <option value="month">This Month</option>
+        <option value="year">This Year</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <button class="btn btn-outline-secondary mt-2" (click)="generateReport()">
+        <i class="bi bi-download"></i> Generate Report
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="row text-center mb-4">
+    <div class="col-md-4 mb-3">
+      <div class="card shadow-sm p-3 bg-light">
+        <i class="bi bi-list fs-3 text-primary"></i>
+        <h5>Total Requests</h5>
+        <h3>{{ totalRequests }}</h3>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card shadow-sm p-3 bg-light">
+        <i class="bi bi-check-circle fs-3 text-success"></i>
+        <h5>Verified</h5>
+        <h3>{{ verifiedRequests }}</h3>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card shadow-sm p-3 bg-light">
+        <i class="bi bi-clock fs-3 text-warning"></i>
+        <h5>Pending</h5>
+        <h3>{{ pendingRequests }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table of Requests -->
+  <div class="card">
+    <div class="card-header">
+      <h5>Student Request Table</h5>
+    </div>
+
+     <div class="table-responsive mb-4 mt-2">
+        <table class="table table-hover table-bordered  align-middle">
+          <thead class="table-head">
+            <tr>
+              <th>#</th>
+              <th>Student</th>
+              <th>Program</th>
+              <th>Type</th>
+              <th>Submitted</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of filteredRecords; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>{{ r.student_name }}</td>
+              <td>{{ r.program }}</td>
+              <td>{{ r.request_type | titlecase }}</td>
+              <td>{{ r.submitted_at | date }}</td>
+              <td>
+                <span class="badge bg-success" *ngIf="r.exam_officer_verified">Verified</span>
+                <span class="badge bg-warning text-dark" *ngIf="!r.exam_officer_verified">Pending</span>
+              </td>
+              <td><button class="btn btn-sm btn-outline-primary" (click)="selectRecord(r)">
+                  <i class="bi bi-eye"></i> View
+                </button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+  </div>
+
+  <!-- Record Details View -->
+  <div *ngIf="record" class="card p-4 shadow-sm mt-4">
+    <h4>Student Information</h4>
+    <p><strong>Name:</strong> {{ record.student_name }}</p>
+    <p><strong>Program:</strong> {{ record.program }}</p>
+    <p><strong>Request Type:</strong> {{ record.request_type }}</p>
+    <p><strong>Submitted At:</strong> {{ record.submitted_at | date }}</p>
+
+    <!-- HOD View -->
+    <div *ngIf="role === 'hod'" class="mt-4">
+      <h5>Academic Records</h5>
+      <ul>
+        <li *ngFor="let course of record.courses">
+          {{ course.name }} ({{ course.grade }})
+        </li>
+      </ul>
+      <button class="btn btn-success" (click)="verify('hod')">
+        <i class="bi bi-check-circle"></i> Verify
+      </button>
+    </div>
+
+    <!-- Bursar View -->
+    <div *ngIf="role === 'bursar'" class="mt-4">
+      <h5>Financial Details</h5>
+      <ul>
+        <li *ngFor="let year of record.financial_records">
+          {{ year.year }} - Paid: {{ year.amount_paid }} / {{ year.total_due }}
+        </li>
+      </ul>
+      <p *ngIf="record.has_pending_dues" class="text-danger">⚠️ Pending Payment</p>
+      <button class="btn btn-success" [disabled]="record.has_pending_dues" (click)="verify('bursar')">
+        <i class="bi bi-cash-coin"></i> Verify
+      </button>
+    </div>
+
+    <!-- Exam Officer View -->
+    <div *ngIf="role === 'exam_officer'" class="mt-4">
+      <h5>Final Review</h5>
+      <p>Grades Verified: {{ record.hod_verified ? 'Yes' : 'No' }}</p>
+      <p>Payments Verified: {{ record.bursar_verified ? 'Yes' : 'No' }}</p>
+      <button class="btn btn-success" [disabled]="!record.hod_verified || !record.bursar_verified"
+        (click)="verify('exam_officer')">
+        <i class="bi bi-check2-square"></i> Final Verify
+      </button>
+      <button class="btn btn-primary ms-2" *ngIf="record.exam_officer_verified" (click)="printCertificate()">
+        <i class="bi bi-printer"></i> Generate {{ record.request_type | titlecase }}
+      </button>
+    </div>
+
+    <!-- Admin View -->
+    <div *ngIf="role === 'admin'" class="mt-4">
+      <h5>Admin Controls</h5>
+      <p>Manage or override any verification step.</p>
+      <button class="btn btn-danger" (click)="overrideVerification()">
+        <i class="bi bi-shield-lock"></i> Override Verification
+      </button>
+    </div>
+
+    <!-- Progress -->
+    <div class="mt-4">
+      <h5>Verification Progress</h5>
+      <ul class="list-group">
+        <li class="list-group-item" [class.list-group-item-success]="record?.hod_verified">
+          HOD Verified
+        </li>
+        <li class="list-group-item" [class.list-group-item-success]="record?.bursar_verified">
+          Bursar Verified
+        </li>
+        <li class="list-group-item" [class.list-group-item-success]="record?.exam_officer_verified">
+          Exam Officer Verified
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
