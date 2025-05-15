@@ -10,7 +10,7 @@ import { FormsModule } from '@angular/forms';
   imports: [CommonModule, FormsModule]
 })
 export class VerifyRecordsComponent implements OnInit {
-  role: string = 'hod'; 
+  role: string = 'hod';
 
   records: any[] = [];
   filteredRecords: any[] = [];
@@ -19,8 +19,6 @@ export class VerifyRecordsComponent implements OnInit {
 
 filterOption: string = 'all';
 filterType: string = 'day';
-
-
 
   totalRequests = 0;
   verifiedRequests = 0;

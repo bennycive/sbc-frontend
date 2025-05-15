@@ -53,7 +53,7 @@ addCertificateAndIds(){
   this.router.navigate(['/dashbord/certificates-and-ids-list']);
 }
 
-
+//  add users
 registerUsers()
 {
   this.router.navigate(['/dashbord/users']);
@@ -76,6 +76,18 @@ verifyRecords(){
    this.router.navigate(['/dashbord/verify-records'])
 
 }
+
+
+financiaRecords(){
+   this.router.navigate(['/dashbord/financial-records'])
+}
+
+collage(){
+   this.router.navigate(['/dashbord/collage'])
+}
+
+
+
 
 
 }

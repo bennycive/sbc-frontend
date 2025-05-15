@@ -9,6 +9,7 @@ import { UsersComponent } from './components/users/users.component';
 import { BiometricSetupComponent } from './components/biometric-setup/biometric-setup.component';
 import { FinancialVerificationsComponent } from './components/financial-verifications/financial-verifications.component';
 import { VerifyRecordsComponent } from './components/verify-records/verify-records.component';
+import { CollageComponent } from './components/collage/collage.component';
 
 
 const routes: Routes = [
@@ -26,7 +27,9 @@ const routes: Routes = [
       { path: 'biometric-setups', component: BiometricSetupComponent},
       { path: 'financial-verifications', component: FinancialVerificationsComponent},
       { path: 'verify-records', component: VerifyRecordsComponent},
-
+      {
+        path: 'collage', component:  CollageComponent
+      }
 
 
     ]
