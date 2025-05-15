@@ -10,6 +10,7 @@ import { BiometricSetupComponent } from './components/biometric-setup/biometric-
 import { FinancialVerificationsComponent } from './components/financial-verifications/financial-verifications.component';
 import { VerifyRecordsComponent } from './components/verify-records/verify-records.component';
 import { CollageComponent } from './components/collage/collage.component';
+import { FinancialRecordsComponent } from './components/financial-records/financial-records.component';
 
 
 const routes: Routes = [
@@ -25,15 +26,14 @@ const routes: Routes = [
       { path: 'certificates-and-ids-list', component: CertificateAndIdsListComponent},
       { path: 'users', component: UsersComponent },
       { path: 'biometric-setups', component: BiometricSetupComponent},
+      { path: 'financial-records', component: FinancialRecordsComponent},
       { path: 'financial-verifications', component: FinancialVerificationsComponent},
       { path: 'verify-records', component: VerifyRecordsComponent},
       {
         path: 'collage', component:  CollageComponent
       }
 
-
     ]
-
 
   }
 

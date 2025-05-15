@@ -1,143 +1,99 @@
-<div class="container mt-4">
-  <div class="card">
-    <div class="card-header" style="background-color: #022548; color: white;">
-      <h6 class="mb-2">Request Form</h6>
+<div class="container-fluid mt-4">
+  <div class="row">
+    <!-- Transcript & Certificate Request Form -->
+    <div class="col-md-6 mb-4">
+      <div class="card w-100">
+        <div class="card-header text-white" style="background-color: #022548;">Transcript & Certificate Request</div>
+        <div class="card-body">
+          <form [formGroup]="transcriptCertificateForm" (ngSubmit)="submitTranscriptCertificateRequest()">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" formControlName="both" id="both">
+              <label class="form-check-label" for="both">Certificate & Transcript</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" formControlName="certificateOnly" id="certificateOnly">
+              <label class="form-check-label" for="certificateOnly">Certificate Only</label>
+            </div>
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" formControlName="transcriptOnly" id="transcriptOnly">
+              <label class="form-check-label" for="transcriptOnly">Transcript Only</label>
+            </div>
+            <div class="mb-3">
+              <label for="copies" class="form-label">Number of Copies</label>
+              <input type="number" class="form-control" formControlName="numberOfCopies" id="copies" required>
+            </div>
+            <button type="submit" class="btn btn-success btn-md">Submit </button>
+          </form>
+        </div>
+      </div>
     </div>
-    <div class="card-body">
-      <form [formGroup]="requestForm" (ngSubmit)="submitRequest()">
-        <!-- Category Selection -->
-        <div class="mb-3">
-          <label for="category" class="form-label">Request Category</label>
-          <select
-            class="form-select"
-            formControlName="category"
-            (change)="onCategoryChange($event)"
-            [ngClass]="{ 'is-invalid': requestForm.get('category')?.invalid && requestForm.get('category')?.touched }"
-          >
-            <option value="">-- Select Request Type --</option>
-            <option value="provisional">Provisional Result</option>
-            <option value="transcript">Transcript</option>
-            <option value="certificate">Certificate</option>
-          </select>
-          <div class="invalid-feedback">Request category is required.</div>
+
+    <!-- Provisional Result Request Form -->
+    <div class="col-md-6 mb-4">
+      <div class="card w-100">
+        <div class="card-header text-white" style="background-color: #022548;">Provisional Result Request</div>
+        <div class="card-body">
+          <form [formGroup]="provisionalForm" (ngSubmit)="submitProvisionalRequest()">
+            <div class="mb-3">
+              <label class="form-label">Current Address</label>
+              <input type="text" class="form-control" formControlName="currentAddress" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">E-Mail Address / Phone</label>
+              <input type="text" class="form-control" formControlName="emailOrPhone" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Year of Admission</label>
+              <input type="text" class="form-control" formControlName="yearOfAdmission" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Year of Study</label>
+              <input type="text" class="form-control" formControlName="yearOfStudy" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Programme of Study</label>
+              <input type="text" class="form-control" formControlName="programme" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Semester / Range</label>
+              <select class="form-select" formControlName="semesterRange">
+                <option value="">Select</option>
+                <option value="One Semester">One Semester</option>
+                <option value="Two Semesters">Two Semesters</option>
+                <option value="First Year to Second Year">First Year to Second Year</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary btn-md ">Submit</button>
+          </form>
         </div>
+      </div>
+    </div>
+  </div>
 
-        <!-- Provisional Fields -->
-        <div *ngIf="selectedCategory === 'provisional'">
-          <div class="mb-3">
-            <label class="form-label">Year of Study</label>
-            <input
-              type="number"
-              class="form-control"
-              formControlName="yearOfStudy"
-              [ngClass]="{ 'is-invalid': requestForm.get('yearOfStudy')?.invalid && requestForm.get('yearOfStudy')?.touched }"
-            />
-            <div class="invalid-feedback">Year of study is required.</div>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Semester</label>
-            <select
-              class="form-select"
-              formControlName="semester"
-              [ngClass]="{ 'is-invalid': requestForm.get('semester')?.invalid && requestForm.get('semester')?.touched }"
-            >
-              <option value="">-- Select Semester --</option>
-              <option value="I">I</option>
-              <option value="II">II</option>
-            </select>
-            <div class="invalid-feedback">Semester is required.</div>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Department</label>
-            <input
-              type="text"
-              class="form-control"
-              formControlName="department"
-              [ngClass]="{ 'is-invalid': requestForm.get('department')?.invalid && requestForm.get('department')?.touched }"
-            />
-            <div class="invalid-feedback">Department is required.</div>
-          </div>
-        </div>
-
-        <!-- Transcript Fields -->
-        <div *ngIf="selectedCategory === 'transcript'">
-          <div class="mb-3">
-            <label class="form-label">Registration Number</label>
-            <input
-              type="text"
-              class="form-control"
-              formControlName="registrationNumber"
-              [ngClass]="{ 'is-invalid': requestForm.get('registrationNumber')?.invalid && requestForm.get('registrationNumber')?.touched }"
-            />
-            <div class="invalid-feedback">Registration number is required.</div>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Graduation Year</label>
-            <input
-              type="number"
-              class="form-control"
-              formControlName="graduationYear"
-              [ngClass]="{ 'is-invalid': requestForm.get('graduationYear')?.invalid && requestForm.get('graduationYear')?.touched }"
-            />
-            <div class="invalid-feedback">Graduation year is required.</div>
-          </div>
-        </div>
-
-        <!-- Certificate Fields -->
-        <div *ngIf="selectedCategory === 'certificate'">
-          <div class="mb-3">
-            <label class="form-label">Full Name (as on certificate)</label>
-            <input
-              type="text"
-              class="form-control"
-              formControlName="fullName"
-              [ngClass]="{ 'is-invalid': requestForm.get('fullName')?.invalid && requestForm.get('fullName')?.touched }"
-            />
-            <div class="invalid-feedback">Full name is required.</div>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Index Number</label>
-            <input
-              type="text"
-              class="form-control"
-              formControlName="indexNumber"
-              [ngClass]="{ 'is-invalid': requestForm.get('indexNumber')?.invalid && requestForm.get('indexNumber')?.touched }"
-            />
-            <div class="invalid-feedback">Index number is required.</div>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Exam Session (e.g. May 2022)</label>
-            <input
-              type="text"
-              class="form-control"
-              formControlName="examSession"
-              [ngClass]="{ 'is-invalid': requestForm.get('examSession')?.invalid && requestForm.get('examSession')?.touched }"
-            />
-            <div class="invalid-feedback">Exam session is required.</div>
-          </div>
-        </div>
-
-        <!-- Common Reason Field -->
-        <div *ngIf="selectedCategory" class="mb-3">
-          <label class="form-label">Reason (Optional)</label>
-          <textarea
-            formControlName="reason"
-            rows="3"
-            class="form-control"
-            placeholder="Provide a reason if applicable..."
-          ></textarea>
-        </div>
-
-        <!-- Submit Button -->
-        <button type="submit" class="btn btn-primary" [disabled]="!selectedCategory || requestForm.invalid">
-          Submit 
-        </button>
-      </form>
+  <!-- Request Progress Table -->
+  <div class="card w-100">
+    <div class="card-header text-white" style="background-color: #022548;">Request Progress</div>
+    <div class="card-body p-0">
+      <table class="table table-bordered table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Type</th>
+            <th>Copies</th>
+            <th>Status</th>
+            <th>Date Submitted</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let request of submittedRequests; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ request.type }}</td>
+            <td>{{ request.copies }}</td>
+            <td>{{ request.status }}</td>
+            <td>{{ request.date | date: 'medium' }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>

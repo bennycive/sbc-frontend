@@ -1,20 +1,28 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
 
+
+import { DepartmentService } from '../../../services/department.service';
+import { CourseService } from '../../../services/course.service';
+import { CollegeService } from '../../../services/college.service';
+
 interface Course {
+  id?: number;
   name: string;
   semester: string;
   classLevel: string;
 }
 
 interface Department {
+  id?: number;
   name: string;
   courses: Course[];
 }
 
 interface College {
+  id?: number;
   name: string;
   departments: Department[];
 }
@@ -26,9 +34,8 @@ interface College {
   templateUrl: './collage.component.html',
   styleUrls: ['./collage.component.css']
 })
-export class CollageComponent {
+export class CollageComponent implements OnInit {
   colleges: College[] = [];
-
   collegeName = '';
   departmentName = '';
   courseName = '';
@@ -37,6 +44,20 @@ export class CollageComponent {
 
   selectedCollegeIndex: number | null = null;
   selectedDepartmentIndex: number | null = null;
+
+  constructor(
+    private collegeService: CollegeService,
+    private departmentService: DepartmentService,
+    private courseService: CourseService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadColleges();
+  }
+
+  loadColleges() {
+    this.collegeService.getColleges().subscribe(data => this.colleges = data);
+  }
 
   selectCollege(index: number) {
     this.selectedCollegeIndex = index;
@@ -49,50 +70,56 @@ export class CollageComponent {
 
   addCollege() {
     if (!this.collegeName.trim()) return;
-    this.colleges.push({ name: this.collegeName.trim(), departments: [] });
-    Swal.fire('Success', 'College added successfully!', 'success');
-    this.collegeName = '';
+    this.collegeService.addCollege({ name: this.collegeName.trim() }).subscribe(() => {
+      Swal.fire('Success', 'College added successfully!', 'success');
+      this.collegeName = '';
+      this.loadColleges();
+    });
   }
 
   updateCollege(index: number) {
+    const college = this.colleges[index];
     Swal.fire({
       title: 'Update College Name',
       input: 'text',
-      inputValue: this.colleges[index].name,
+      inputValue: college.name,
       showCancelButton: true,
       confirmButtonText: 'Update',
     }).then(result => {
       if (result.isConfirmed && result.value.trim()) {
-        this.colleges[index].name = result.value.trim();
-        Swal.fire('Updated', 'College name updated successfully.', 'success');
+        this.collegeService.updateCollege(college.id!, { name: result.value.trim() }).subscribe(() => {
+          Swal.fire('Updated', 'College updated successfully!', 'success');
+          this.loadColleges();
+        });
       }
     });
   }
 
   deleteCollege(index: number) {
+    const college = this.colleges[index];
     Swal.fire({
       title: 'Delete College?',
-      text: 'This will delete the college and its departments!',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Yes, delete it!'
     }).then(result => {
       if (result.isConfirmed) {
-        this.colleges.splice(index, 1);
-        if (this.selectedCollegeIndex === index) this.selectedCollegeIndex = null;
-        Swal.fire('Deleted!', 'College has been deleted.', 'success');
+        this.collegeService.deleteCollege(college.id!).subscribe(() => {
+          Swal.fire('Deleted!', 'College has been deleted.', 'success');
+          this.loadColleges();
+        });
       }
     });
   }
 
   addDepartment() {
     if (this.selectedCollegeIndex === null || !this.departmentName.trim()) return;
-    this.colleges[this.selectedCollegeIndex].departments.push({
-      name: this.departmentName.trim(),
-      courses: []
+    const college = this.colleges[this.selectedCollegeIndex];
+    this.departmentService.addDepartment({ name: this.departmentName.trim(), college: college.id }).subscribe(() => {
+      Swal.fire('Success', 'Department added successfully!', 'success');
+      this.departmentName = '';
+      this.loadColleges();
     });
-    Swal.fire('Success', 'Department added successfully!', 'success');
-    this.departmentName = '';
   }
 
   updateDepartment(index: number) {
@@ -105,52 +132,52 @@ export class CollageComponent {
       confirmButtonText: 'Update',
     }).then(result => {
       if (result.isConfirmed && result.value.trim()) {
-        department.name = result.value.trim();
-        Swal.fire('Updated', 'Department name updated successfully.', 'success');
+        this.departmentService.updateDepartment(department.id!, { name: result.value.trim() }).subscribe(() => {
+          Swal.fire('Updated', 'Department updated successfully!', 'success');
+          this.loadColleges();
+        });
       }
     });
   }
 
   deleteDepartment(index: number) {
+    const department = this.colleges[this.selectedCollegeIndex!].departments[index];
     Swal.fire({
       title: 'Delete Department?',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Yes, delete it!'
     }).then(result => {
-      if (result.isConfirmed && this.selectedCollegeIndex !== null) {
-        this.colleges[this.selectedCollegeIndex].departments.splice(index, 1);
-        if (this.selectedDepartmentIndex === index) this.selectedDepartmentIndex = null;
-        Swal.fire('Deleted!', 'Department has been deleted.', 'success');
+      if (result.isConfirmed) {
+        this.departmentService.deleteDepartment(department.id!).subscribe(() => {
+          Swal.fire('Deleted!', 'Department has been deleted.', 'success');
+          this.loadColleges();
+        });
       }
     });
   }
 
   addCourse() {
-    if (
-      this.selectedCollegeIndex === null ||
-      this.selectedDepartmentIndex === null ||
-      !this.courseName.trim() || !this.semester || !this.classLevel
-    ) return;
+    if (this.selectedCollegeIndex === null || this.selectedDepartmentIndex === null ||
+        !this.courseName.trim() || !this.semester || !this.classLevel) return;
 
-    this.colleges[this.selectedCollegeIndex]
-      .departments[this.selectedDepartmentIndex]
-      .courses.push({
-        name: this.courseName.trim(),
-        semester: this.semester,
-        classLevel: this.classLevel
-      });
-
-    Swal.fire('Success', 'Course added successfully!', 'success');
-    this.courseName = '';
-    this.semester = '';
-    this.classLevel = '';
+    const department = this.colleges[this.selectedCollegeIndex].departments[this.selectedDepartmentIndex];
+    this.courseService.addCourse({
+      name: this.courseName.trim(),
+      semester: this.semester,
+      class_level: this.classLevel,
+      department: department.id
+    }).subscribe(() => {
+      Swal.fire('Success', 'Course added successfully!', 'success');
+      this.courseName = '';
+      this.semester = '';
+      this.classLevel = '';
+      this.loadColleges();
+    });
   }
 
   updateCourse(index: number) {
-    const course = this.colleges[this.selectedCollegeIndex!]
-      .departments[this.selectedDepartmentIndex!].courses[index];
-
+    const course = this.colleges[this.selectedCollegeIndex!].departments[this.selectedDepartmentIndex!].courses[index];
     Swal.fire({
       title: 'Update Course Name',
       input: 'text',
@@ -159,13 +186,16 @@ export class CollageComponent {
       confirmButtonText: 'Update',
     }).then(result => {
       if (result.isConfirmed && result.value.trim()) {
-        course.name = result.value.trim();
-        Swal.fire('Updated', 'Course updated successfully.', 'success');
+        this.courseService.updateCourse(course.id!, { name: result.value.trim() }).subscribe(() => {
+          Swal.fire('Updated', 'Course updated successfully!', 'success');
+          this.loadColleges();
+        });
       }
     });
   }
 
   deleteCourse(index: number) {
+    const course = this.colleges[this.selectedCollegeIndex!].departments[this.selectedDepartmentIndex!].courses[index];
     Swal.fire({
       title: 'Delete Course?',
       icon: 'warning',
@@ -173,10 +203,10 @@ export class CollageComponent {
       confirmButtonText: 'Yes, delete it!'
     }).then(result => {
       if (result.isConfirmed) {
-        this.colleges[this.selectedCollegeIndex!]
-          .departments[this.selectedDepartmentIndex!]
-          .courses.splice(index, 1);
-        Swal.fire('Deleted!', 'Course deleted successfully.', 'success');
+        this.courseService.deleteCourse(course.id!).subscribe(() => {
+          Swal.fire('Deleted!', 'Course deleted successfully.', 'success');
+          this.loadColleges();
+        });
       }
     });
   }

@@ -1,0 +1,79 @@
+<!-- student-financial-statement.component.html -->
+<div class="financial-statement">
+
+  <h5 class="text-center mb-4">Student Financial Statement</h5>
+
+  <!-- Iterate over academic years -->
+  <ng-container *ngFor="let year of academicYears">
+
+    <h6 class="mt-5 mb-3 text-center">Financial Year: {{ year.name }}</h6>
+
+    <!-- Student's Fee Payments -->
+    <h5>Student’s Fee Payments</h5>
+    <div class="table table-responsive">
+      <table class="table table-bordered table-sm">
+        <thead>
+          <tr>
+            <th>S/No</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Payment Type</th>
+            <th>Remark</th>
+            <th>Reference No.</th>
+            <th>Fee</th>
+            <th>Payment</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let payment of getPaymentsForYear(year.id); let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ payment.date | date:'dd/MM/yyyy' }}</td>
+            <td>{{ payment.type }}</td>
+            <td>{{ payment.payment_type }}</td>
+            <td>{{ payment.remark }}</td>
+            <td>{{ payment.reference_no }}</td>
+            <td>{{ payment.fee | number:'1.2-2' }}</td>
+            <td>{{ payment.payment | number:'1.2-2' }}</td>
+            <td>{{ payment.balance | number:'1.2-2' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Student's Other Payments -->
+    <h5>Student’s Other Payments</h5>
+    <div class="table table-responsive">
+      <table class="table table-bordered table-sm">
+        <thead>
+          <tr>
+            <th>S/No</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Payment Type</th>
+            <th>Remark</th>
+            <th>Reference No.</th>
+            <th>Fee</th>
+            <th>Payment</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let otherPayment of getOtherPaymentsForYear(year.id); let j = index">
+            <td>{{ j + 1 }}</td>
+            <td>{{ otherPayment.date | date:'dd/MM/yyyy' }}</td>
+            <td>{{ otherPayment.type }}</td>
+            <td>{{ otherPayment.payment_type }}</td>
+            <td>{{ otherPayment.remark }}</td>
+            <td>{{ otherPayment.reference_no || '-' }}</td>
+            <td>{{ otherPayment.fee | number:'1.2-2' }}</td>
+            <td>{{ otherPayment.payment || '-' | number:'1.2-2' }}</td>
+            <td>{{ otherPayment.balance || '-' | number:'1.2-2' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </ng-container>
+
+</div>

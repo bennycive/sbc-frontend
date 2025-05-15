@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-certificate-requests',
@@ -10,55 +11,86 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
   styleUrls: ['./certificate-requests.component.css']
 })
 export class CertificateRequestsComponent {
-  requestForm: FormGroup;
-  selectedCategory: string = '';
+  transcriptCertificateForm: FormGroup;
+  provisionalForm: FormGroup;
+  submittedRequests: any[] = [];
 
   constructor(private fb: FormBuilder) {
-    this.requestForm = this.fb.group({
-      category: ['', Validators.required],
-      reason: ['']
+    this.transcriptCertificateForm = this.fb.group({
+      both: [false],
+      certificateOnly: [false],
+      transcriptOnly: [false],
+      numberOfCopies: [null, Validators.required]
+    });
+
+    this.provisionalForm = this.fb.group({
+      currentAddress: ['', Validators.required],
+      emailOrPhone: ['', Validators.required],
+      yearOfAdmission: ['', Validators.required],
+      yearOfStudy: ['', Validators.required],
+      programme: ['', Validators.required],
+      semesterRange: ['', Validators.required]
     });
   }
 
-  onCategoryChange(event: Event) {
-    const category = (event.target as HTMLSelectElement).value;
-    this.selectedCategory = category;
+  submitTranscriptCertificateRequest() {
+    const form = this.transcriptCertificateForm.value;
 
-    const newForm: { [key: string]: any } = {
-      category: [category, Validators.required],
-      reason: [''],
-    };
+    if (!this.transcriptCertificateForm.valid ||
+        (!form.both && !form.certificateOnly && !form.transcriptOnly)) {
+      Swal.fire('Incomplete!', 'Please complete the transcript/certificate form correctly.', 'warning');
+      return;
+    }
 
-    if (category === 'provisional') {
-      Object.assign(newForm, {
-        yearOfStudy: ['', Validators.required],
-        semester: ['', Validators.required],
-        department: ['', Validators.required],
-      });
-    } else if (category === 'transcript') {
-      Object.assign(newForm, {
-        registrationNumber: ['', Validators.required],
-        graduationYear: ['', Validators.required],
-      });
-    } else if (category === 'certificate') {
-      Object.assign(newForm, {
-        fullName: ['', Validators.required],
-        indexNumber: ['', Validators.required],
-        examSession: ['', Validators.required],
+    if (form.both) {
+      this.submittedRequests.push({
+        type: 'Certificate & Transcript',
+        copies: form.numberOfCopies,
+        status: 'Pending Bursar Verification',
+        date: new Date()
       });
     }
 
-    this.requestForm = this.fb.group(newForm);
+    if (form.certificateOnly) {
+      this.submittedRequests.push({
+        type: 'Certificate Only',
+        copies: form.numberOfCopies,
+        status: 'Pending Bursar Verification',
+        date: new Date()
+      });
+    }
+
+    if (form.transcriptOnly) {
+      this.submittedRequests.push({
+        type: 'Transcript Only',
+        copies: form.numberOfCopies,
+        status: 'Pending Bursar Verification',
+        date: new Date()
+      });
+    }
+
+    Swal.fire('Success', 'Request submitted successfully.', 'success');
+    this.transcriptCertificateForm.reset();
   }
 
-  submitRequest() {
-    if (this.requestForm.valid) {
-      console.log('Submitted request:', this.requestForm.value);
-      alert('Your request has been submitted to UDOM Records Office.');
-      this.requestForm.reset();
-      this.selectedCategory = '';
-    } else {
-      alert('Please complete the form before submitting.');
+  submitProvisionalRequest() {
+    if (!this.provisionalForm.valid) {
+      Swal.fire('Incomplete!', 'Please complete all provisional request fields.', 'warning');
+      return;
     }
+
+    const form = this.provisionalForm.value;
+
+    this.submittedRequests.push({
+      type: `Provisional Result (${form.semesterRange})`,
+      copies: 1,
+      status: 'Pending Bursar Verification',
+      date: new Date()
+    });
+
+    Swal.fire('Success', 'Provisional request submitted.', 'success');
+    this.provisionalForm.reset();
   }
+
 }
+
