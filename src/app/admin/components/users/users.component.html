@@ -1,130 +1,156 @@
 <div class="container mt-4">
 
   <!-- Registration Form -->
- <div class="card mb-4">
-   <div class="card-header user-table-head text-white">
-     <h5>{{ editingIndex !== null ? 'Edit User' : 'Register New User' }}</h5>
-   </div>
-   <div class="card-body">
-     <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
-      
-       <!-- First Name and Last Name -->
-       <div class="row mb-3">
-         <div class="col-md-6">
-           <label>First Name</label>
-           <input formControlName="first_name" class="form-control" />
-           <div *ngIf="f['first_name'].touched && f['first_name'].invalid" class="text-danger">Required</div>
-         </div>
-         <div class="col-md-6">
-           <label>Last Name</label>
-           <input formControlName="last_name" class="form-control" />
-           <div *ngIf="f['last_name'].touched && f['last_name'].invalid" class="text-danger">Required</div>
-         </div>
-       </div>
+  <div class="card mb-4">
+    <div class="card-header user-table-head text-white">
+      <h5>{{ editingIndex !== null ? 'Edit User' : 'Register New User' }}</h5>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
 
-       <!-- Email and Username -->
-       <div class="row mb-3">
-         <div class="col-md-6">
-           <label>Email</label>
-           <input formControlName="email" type="email" class="form-control" />
-           <div *ngIf="f['email'].touched && f['email'].invalid" class="text-danger">Valid email required</div>
-         </div>
-         <div class="col-md-6">
-           <label>Username</label>
-           <input formControlName="username" class="form-control"  placeholder="eg . T-23-1234 OR Mussa" />
-           <div *ngIf="f['username'].touched && f['username'].invalid" class="text-danger">Required</div>
-         </div>
-       </div>
+        <!-- First Name and Last Name -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label>First Name</label>
+            <input formControlName="first_name" class="form-control" />
+            <div *ngIf="f['first_name'].touched && f['first_name'].invalid" class="text-danger">Required</div>
+          </div>
+          <div class="col-md-6">
+            <label>Last Name</label>
+            <input formControlName="last_name" class="form-control" />
+            <div *ngIf="f['last_name'].touched && f['last_name'].invalid" class="text-danger">Required</div>
+          </div>
+        </div>
 
-       <!-- Role -->
-       <div class="row mb-3">
-         <div class="col-md-6">
+        <!-- Email and Username -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label>Email</label>
+            <input formControlName="email" type="email" class="form-control" />
+            <div *ngIf="f['email'].touched && f['email'].invalid" class="text-danger">Valid email required</div>
+          </div>
+          <div class="col-md-6">
+            <label>Username</label>
+            <input formControlName="username" class="form-control" placeholder="eg . T-23-1234 OR Mussa" />
+            <div *ngIf="f['username'].touched && f['username'].invalid" class="text-danger">Required</div>
+          </div>
+        </div>
+
+        <!-- Role -->
+        <div class="row mb-3">
+          <!-- <div class="col-md-6">
            <label>Password</label>
            <input formControlName="password" class="form-control" />
            <div *ngIf="f['password'].touched && f['password'].invalid" class="text-danger">Password Required</div>
-         </div>
+         </div> -->
 
-         <div class="col-md-6">
-           <label>Role</label>
-           <select formControlName="role" class="form-select">
-             <option value="">-- Select Role --</option>
-             <option *ngFor="let r of roles" [value]="r">{{ r | titlecase }}</option>
-           </select>
-           <div *ngIf="f['role'].touched && f['role'].invalid" class="text-danger">Required</div>
-         </div>
-       </div>
+          <div class="col-md-6">
+            <label>Password</label>
+            <input formControlName="password" type="password" class="form-control" (input)="checkPasswordStrength()" />
 
-       <!-- Department Selection -->
-       <div class="row mb-3">
-         <div class="col-md-6">
-           <label>Department</label>
-           <select formControlName="department" class="form-select">
-             <option value="">-- Select Department --</option>
-             <option *ngFor="let d of departments" [value]="d">{{ d }}</option>
-           </select>
-           <div *ngIf="f['department'].touched && f['department'].invalid" class="text-danger">Required</div>
-         </div>
-       </div>
+            <!-- Required validation -->
+            <div *ngIf="f['password'].touched && f['password'].errors?.['required']" class="text-danger">
+              Password Required
+            </div>
 
-       <!-- Active Status -->
-       <div class="row mb-3">
-         <div class="col-md-6">
-           <label>Active</label><br />
-           <input type="checkbox" formControlName="is_active" class="form-check-input" />
-         </div>
-       </div>
+            <!-- Custom strength validation -->
+            <div *ngIf="f['password'].touched && f['password'].errors?.['weakPassword']" class="text-danger">
+              Password too weak. Must be at least 8 characters, include uppercase, lowercase, number, and special
+              character.
+            </div>
 
-       <!-- Submit Button -->
-       <button type="submit" class="btn btn-success mt-2">
-         {{ editingIndex !== null ? 'Update User' : 'Register' }}
-       </button>
-     </form>
-   </div>
- </div>
-
-   <!-- Users Table -->
-   <div class="card">
-     <div class="card-header user-container text-white">
-       <h5>Registered Users</h5>
-     </div>
-     <div class="Tcard-body table-responsive">
-       <table id="userTable" class="table table-bordered table-responsive table-striped w-100">
-         <thead>
-           <tr>
-             <th>#</th>
-             <th>Name</th>
-             <th>Username</th>
-             <th>Email</th>
-             <th>Role</th>
-             <th>Department</th>
-             <th>Phone</th>
-             <th>Actions</th>
-           </tr>
-         </thead>
-         <tbody>
-           <tr *ngFor="let user of filteredUsers; let i = index">
-             <td>{{ i + 1 }}</td>
-             <td>{{ user.first_name }} {{ user.last_name }}</td>
-             <td>{{ user.username }}</td>
-             <td>{{ user.email }}</td>
-             <td>{{ user.role | titlecase }}</td>
-             <td>{{ user.department }}</td>
-             <td>{{ user.phone }}</td>
-             <td>
-               <button class="btn btn-sm btn-primary me-1" (click)="onEdit(i)">Edit</button>
-               <button class="btn btn-sm btn-danger" (click)="onDelete(i)">Delete</button>
-             </td>
-           </tr>
-         </tbody>
-       </table>
-     </div>
-   </div>
+            <!-- Password strength meter -->
+            <div *ngIf="passwordStrength" class="mt-1">
+                            <small [ngClass]="{
+                    'text-danger': passwordStrength === 'Weak',
+                    'text-warning': passwordStrength === 'Medium',
+                    'text-success': passwordStrength === 'Strong'
+                  }">Strength: {{ passwordStrength }}</small>
+            </div>
+          </div>
 
 
-   <!-- Report Generation Button -->
-   <div class="card mb-4 mt-4">
-     <div class="card-body">
-       <button class="btn btn-success" (click)="generatePdfReport()">Generate PDF Report</button>
-     </div>
-   </div>
- </div>
+          <div class="col-md-6">
+            <label>Role</label>
+            <select formControlName="role" class="form-select">
+              <option value="">-- Select Role --</option>
+              <option *ngFor="let r of roles" [value]="r">{{ r | titlecase }}</option>
+            </select>
+            <div *ngIf="f['role'].touched && f['role'].invalid" class="text-danger">Required</div>
+          </div>
+        </div>
+
+        <!-- Department Selection -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label>Department</label>
+            <select formControlName="department" class="form-select">
+              <option value="">-- Select Department --</option>
+              <option *ngFor="let d of departments" [value]="d">{{ d }}</option>
+            </select>
+            <div *ngIf="f['department'].touched && f['department'].invalid" class="text-danger">Required</div>
+          </div>
+        </div>
+
+        <!-- Active Status -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label>Active</label><br />
+            <input type="checkbox" formControlName="is_active" class="form-check-input" />
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-success mt-2">
+          {{ editingIndex !== null ? 'Update User' : 'Register' }}
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Users Table -->
+  <div class="card">
+    <div class="card-header user-container text-white">
+      <h5>Registered Users</h5>
+    </div>
+    <div class="Tcard-body table-responsive">
+      <table id="userTable" class="table table-bordered table-responsive table-striped w-100">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Department</th>
+            <th>Phone</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of filteredUsers; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ user.first_name }} {{ user.last_name }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.role | titlecase }}</td>
+            <td>{{ user.department }}</td>
+            <td>{{ user.phone }}</td>
+            <td>
+              <button class="btn btn-sm btn-primary me-1" (click)="onEdit(i)">Edit</button>
+              <button class="btn btn-sm btn-danger" (click)="onDelete(i)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <!-- Report Generation Button -->
+  <div class="card mb-4 mt-4">
+    <div class="card-body">
+      <button class="btn btn-success" (click)="generatePdfReport()">Generate PDF Report</button>
+    </div>
+  </div>
+</div>

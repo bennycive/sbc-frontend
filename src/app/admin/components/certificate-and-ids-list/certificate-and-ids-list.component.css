@@ -1,0 +1,25 @@
+.sliding-panel {
+  position: fixed;
+  top: 56px; /* below navbar if any */
+  right: -450px;
+  width: 400px;
+  max-width: 90vw;
+  height: calc(100vh - 56px);
+  background: white;
+  box-shadow: -2px 0 8px rgba(0,0,0,0.15);
+  transition: right 0.3s ease-in-out;
+  z-index: 1050;
+  overflow-y: auto;
+}
+
+.sliding-panel.open {
+  right: 0;
+}
+
+.panel-header {
+  border-bottom: 1px solid #ddd;
+}
+
+.panel-body {
+  padding: 1rem;
+}

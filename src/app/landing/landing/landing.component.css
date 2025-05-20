@@ -10,3 +10,8 @@
 .card:hover {
   transform: translateY(-5px);
 }
+
+.bg-light-blue {
+  background-color: #e6f2f9;
+}
+

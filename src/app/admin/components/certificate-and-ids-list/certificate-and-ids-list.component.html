@@ -1,6 +1,6 @@
 <div class="container mt-4">
   <div class="card shadow-sm">
-    <div class="card-header  text-white" style="background-color: #022548; color: white;">
+    <div class="card-header text-white" style="background-color: #022548;">
       <h6 class="mb-0">Certificate and ID List</h6>
     </div>
     <div class="card-body">
@@ -14,106 +14,174 @@
         <table class="table table-striped table-hover align-middle mb-0">
           <thead class="table-light">
             <tr>
-              <th scope="col">ID</th>
-              <th scope="col">Type</th>
-              <th scope="col">Name</th>
-              <th scope="col">Action</th>
+              <th>ID</th>
+              <th>Student</th>
+              <th>Type</th>
+              <th>Name</th>
+              <th>Uploaded</th>
+              <th>Preview</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let c of certificates">
-              <td>{{ c.id }}</td>
-              <td>{{ c.type }}</td>
-              <td>{{ c.name }}</td>
+            <tr *ngFor="let cert of certificates">
+              <td>{{ cert.id }}</td>
+              <td>{{ getStudentName(cert.student) }}</td>
+              <td>{{ cert.certificate_type }}</td>
+              <td>{{ cert.certificate_name }}</td>
+              <td>{{ cert.uploaded_at | date: 'medium' }}</td>
               <td>
-                <button class="btn btn-info btn-sm me-1" (click)="openViewPanel(c)">
+                <img *ngIf="cert.certificate_file_url" [src]="cert.certificate_file_url"
+                     alt="Certificate" class="img-thumbnail" style="max-width: 60px; max-height: 60px;" />
+                <span *ngIf="!cert.certificate_file_url">-</span>
+              </td>
+              <td>
+                <button class="btn btn-info btn-sm me-1" (click)="openViewPanel(cert)" title="View">
                   <i class="bi bi-eye"></i>
                 </button>
-                <button class="btn btn-warning btn-sm me-1" (click)="openEditPanel(c)">
-                  <i class="bi bi-pencil"></i>
+                <button class="btn btn-primary btn-sm me-1" (click)="openEditPanel(cert)" title="Edit">
+                  <i class="bi bi-pencil-square"></i>
                 </button>
-                <button class="btn btn-danger btn-sm" (click)="deleteCertificate(c.id)">
+                <button class="btn btn-danger btn-sm" (click)="deleteCertificate(cert.id)" title="Delete">
                   <i class="bi bi-trash"></i>
                 </button>
               </td>
             </tr>
+            <tr *ngIf="certificates.length === 0">
+              <td colspan="7" class="text-center">No certificates found.</td>
+            </tr>
           </tbody>
         </table>
       </div>
+    </div>
+  </div>
 
-      <!-- Side-Panel (Add/View/Edit) -->
-      <div class="side-panel" [class.open]="isPanelOpen" (click)="closePanel()">
-        <div class="side-panel-content" (click)="$event.stopPropagation()">
-          <!-- ADD -->
-          <ng-container *ngIf="mode === 'add'">
-            <h4 class="mb-3">Add Certificate</h4>
-            <form [formGroup]="addCertificateForm" (ngSubmit)="submitAddCertificate()">
-              <div class="mb-3">
-                <label class="form-label">Category</label>
-                <select formControlName="category" class="form-select">
-                  <option value="">-- Select --</option>
-                  <option value="vote-id">Vote ID</option>
-                  <option value="nin">NIN</option>
-                  <option value="driving-license">Driving License</option>
-                </select>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Name</label>
-                <input type="text" formControlName="name" class="form-control" />
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Image</label>
-                <input type="file" formControlName="image" class="form-control" />
-              </div>
-              <button type="submit" class="btn btn-primary me-2">Save</button>
-              <button type="button" class="btn btn-outline-secondary" (click)="closePanel()">Cancel</button>
-            </form>
-          </ng-container>
+  <!-- Sliding Panel -->
+  <div class="sliding-panel" [class.open]="isPanelOpen">
+    <div class="panel-header d-flex justify-content-between align-items-center px-3 py-2 bg-primary text-white">
+      <h5 class="mb-0">
+        {{ mode === 'add' ? 'Add New Certificate' : mode === 'edit' ? 'Edit Certificate' : mode === 'view' ? 'View Certificate' : '' }}
+      </h5>
+      <button class="btn btn-light btn-sm" (click)="closePanel()" title="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
 
-          <!-- VIEW -->
-          <ng-container *ngIf="mode === 'view' && selectedCertificate">
-            <h4 class="mb-3">View Certificate</h4>
-            <ul class="list-group mb-3">
-              <li class="list-group-item"><strong>ID:</strong> {{ selectedCertificate.id }}</li>
-              <li class="list-group-item"><strong>Name:</strong> {{ selectedCertificate.name }}</li>
-              <li class="list-group-item"><strong>Type:</strong> {{ selectedCertificate.type }}</li>
-              <li *ngIf="selectedCertificate.reason" class="list-group-item">
-                <strong>Reason:</strong> {{ selectedCertificate.reason }}
-              </li>
-            </ul>
-            <div *ngIf="selectedCertificate.imageUrl" class="text-center mb-3">
-              <img [src]="selectedCertificate.imageUrl" class="img-fluid rounded" alt="Certificate Image" />
-            </div>
-            <button class="btn btn-secondary" (click)="closePanel()">Close</button>
-          </ng-container>
-
-          <!-- EDIT -->
-          <ng-container *ngIf="mode === 'edit' && selectedCertificate">
-            <h4 class="mb-3">Edit Certificate</h4>
-            <form [formGroup]="editCertificateForm" (ngSubmit)="submitEditCertificate()">
-              <div class="mb-3">
-                <label class="form-label">Category</label>
-                <select formControlName="category" class="form-select">
-                  <option value="">-- Select --</option>
-                  <option value="vote-id">Vote ID</option>
-                  <option value="nin">NIN</option>
-                  <option value="driving-license">Driving License</option>
-                </select>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Name</label>
-                <input type="text" formControlName="name" class="form-control" />
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Image</label>
-                <input type="file" formControlName="image" class="form-control" />
-              </div>
-              <button type="submit" class="btn btn-warning me-2">Update</button>
-              <button type="button" class="btn btn-outline-secondary" (click)="closePanel()">Cancel</button>
-            </form>
-          </ng-container>
+    <div class="panel-body p-3" *ngIf="mode === 'add'">
+      <form [formGroup]="addCertificateForm" (ngSubmit)="submitAddCertificate()">
+        <div class="mb-3">
+          <label for="studentSelectAdd" class="form-label">Student</label>
+          <select id="studentSelectAdd" class="form-select" formControlName="student" [class.is-invalid]="addCertificateForm.get('student')?.invalid && addCertificateForm.get('student')?.touched">
+            <option value="">-- Select Student --</option>
+            <option *ngFor="let student of students" [value]="student.id">{{ student.username }}</option>
+          </select>
+          <div *ngIf="addCertificateForm.get('student')?.invalid && addCertificateForm.get('student')?.touched" class="invalid-feedback">
+            Student is required
+          </div>
         </div>
-      </div>
+
+        <div class="mb-3">
+          <label for="certificateTypeAdd" class="form-label">Certificate Type</label>
+          <input id="certificateTypeAdd" type="text" class="form-control" formControlName="certificate_type" [class.is-invalid]="addCertificateForm.get('certificate_type')?.invalid && addCertificateForm.get('certificate_type')?.touched" />
+          <div *ngIf="addCertificateForm.get('certificate_type')?.invalid && addCertificateForm.get('certificate_type')?.touched" class="invalid-feedback">
+            Certificate type is required
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="certificateNameAdd" class="form-label">Certificate Name</label>
+          <input id="certificateNameAdd" type="text" class="form-control" formControlName="certificate_name" [class.is-invalid]="addCertificateForm.get('certificate_name')?.invalid && addCertificateForm.get('certificate_name')?.touched" />
+          <div *ngIf="addCertificateForm.get('certificate_name')?.invalid && addCertificateForm.get('certificate_name')?.touched" class="invalid-feedback">
+            Certificate name must be at least 3 characters
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="certificateFileAdd" class="form-label">Certificate File</label>
+          <input id="certificateFileAdd" type="file" accept="image/*" class="form-control" (change)="handleAddFile($event)" [class.is-invalid]="addCertificateForm.get('certificate_file')?.invalid && addCertificateForm.get('certificate_file')?.touched" />
+          <div *ngIf="addCertificateForm.get('certificate_file')?.invalid && addCertificateForm.get('certificate_file')?.touched" class="invalid-feedback">
+            Certificate file is required
+          </div>
+        </div>
+
+        <div *ngIf="addPreviewUrl" class="mb-3">
+          <label>Preview:</label>
+          <img [src]="addPreviewUrl" alt="Preview" class="img-thumbnail" style="max-width: 200px; max-height: 200px;" />
+        </div>
+
+        <button type="submit" class="btn btn-success" [disabled]="uploading">
+          <i *ngIf="uploading" class="spinner-border spinner-border-sm me-1"></i>
+          Submit
+        </button>
+      </form>
+    </div>
+
+    <div class="panel-body p-3" *ngIf="mode === 'edit' && selectedCertificate">
+      <form [formGroup]="editCertificateForm" (ngSubmit)="submitEditCertificate()">
+        <div class="mb-3">
+          <label for="studentSelectEdit" class="form-label">Student</label>
+          <select id="studentSelectEdit" class="form-select" formControlName="student" [class.is-invalid]="editCertificateForm.get('student')?.invalid && editCertificateForm.get('student')?.touched">
+            <option value="">-- Select Student --</option>
+            <option *ngFor="let student of students" [value]="student.id">{{ student.username }}</option>
+          </select>
+          <div *ngIf="editCertificateForm.get('student')?.invalid && editCertificateForm.get('student')?.touched" class="invalid-feedback">
+            Student is required
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="certificateTypeEdit" class="form-label">Certificate Type</label>
+          <input id="certificateTypeEdit" type="text" class="form-control" formControlName="certificate_type" [class.is-invalid]="editCertificateForm.get('certificate_type')?.invalid && editCertificateForm.get('certificate_type')?.touched" />
+          <div *ngIf="editCertificateForm.get('certificate_type')?.invalid && editCertificateForm.get('certificate_type')?.touched" class="invalid-feedback">
+            Certificate type is required
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="certificateNameEdit" class="form-label">Certificate Name</label>
+          <input id="certificateNameEdit" type="text" class="form-control" formControlName="certificate_name" [class.is-invalid]="editCertificateForm.get('certificate_name')?.invalid && editCertificateForm.get('certificate_name')?.touched" />
+          <div *ngIf="editCertificateForm.get('certificate_name')?.invalid && editCertificateForm.get('certificate_name')?.touched" class="invalid-feedback">
+            Certificate name must be at least 3 characters
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="certificateFileEdit" class="form-label">Certificate File (leave empty to keep current)</label>
+          <input id="certificateFileEdit" type="file" accept="image/*" class="form-control" (change)="handleEditFile($event)" />
+        </div>
+
+        <div *ngIf="editPreviewUrl" class="mb-3">
+          <label>Preview:</label>
+          <img [src]="editPreviewUrl" alt="Preview" class="img-thumbnail" style="max-width: 200px; max-height: 200px;" />
+        </div>
+
+        <button type="submit" class="btn btn-primary" [disabled]="uploading">
+          <i *ngIf="uploading" class="spinner-border spinner-border-sm me-1"></i>
+          Update
+        </button>
+      </form>
+    </div>
+
+    <div class="panel-body p-3" *ngIf="mode === 'view' && selectedCertificate">
+      <dl class="row">
+        <dt class="col-sm-3">Student</dt>
+        <dd class="col-sm-9">{{ getStudentName(selectedCertificate.student) }}</dd>
+
+        <dt class="col-sm-3">Certificate Type</dt>
+        <dd class="col-sm-9">{{ selectedCertificate.certificate_type }}</dd>
+
+        <dt class="col-sm-3">Certificate Name</dt>
+        <dd class="col-sm-9">{{ selectedCertificate.certificate_name }}</dd>
+
+        <dt class="col-sm-3">Uploaded At</dt>
+        <dd class="col-sm-9">{{ selectedCertificate.uploaded_at | date: 'medium' }}</dd>
+
+        <dt class="col-sm-3">Certificate File</dt>
+        <dd class="col-sm-9">
+          <img *ngIf="selectedCertificate.certificate_file_url" [src]="selectedCertificate.certificate_file_url" alt="Certificate" class="img-fluid" style="max-width: 300px;" />
+          <span *ngIf="!selectedCertificate.certificate_file_url">No file available</span>
+        </dd>
+      </dl>
     </div>
   </div>
 </div>

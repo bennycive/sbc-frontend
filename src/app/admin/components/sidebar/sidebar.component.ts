@@ -87,7 +87,9 @@ collage(){
 }
 
 
-
+viewCertificateAndIds(){
+   this.router.navigate(['/dashbord/view-certificates'])
+}
 
 
 }

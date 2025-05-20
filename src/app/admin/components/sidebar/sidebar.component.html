@@ -56,9 +56,16 @@
       </a>
     </li>
 
+
     <li *ngIf="currentUserRole === 'student'">
+      <a class="nav-link text-white" (click)="viewCertificateAndIds()">
+        <i class="bi bi-award me-2"></i> View Certificates
+      </a>
+    </li>
+
+    <li *ngIf="currentUserRole === 'admin'">
       <a class="nav-link text-white" (click)="addCertificateAndIds()">
-        <i class="bi bi-award me-2"></i> Certificates
+        <i class="bi bi-award me-2"></i> Add Certificates
       </a>
     </li>
 

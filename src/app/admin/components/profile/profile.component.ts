@@ -25,7 +25,7 @@ export class ProfileComponent implements OnInit {
     private http: HttpClient,
     private router: Router,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const user = this.authService.getUser();
@@ -75,18 +75,72 @@ export class ProfileComponent implements OnInit {
     this.disabled = false;
   }
 
+  // save(): void {
+  //   const token = this.authService.getToken();
+
+  //   if (!this.profile || !this.profile.user || !token) return;
+
+  //   const formData = new FormData();
+  //   formData.append('user', this.profile.user.toString());
+  //   formData.append('yos', this.profile.yos || '');
+  //   formData.append('nida', this.profile.nida || '');
+  //   formData.append('phone_number', this.profile.phone_number || '');
+  //   formData.append('department', this.profile.department || '');
+  //   formData.append('program', this.profile.program || '');
+
+  //   if (this.selectedFile) {
+  //     formData.append('image', this.selectedFile);
+  //   }
+
+  //   const headers = {
+  //     headers: new HttpHeaders({
+  //       'Authorization': `Bearer ${token}`
+  //     })
+  //   };
+
+  //   console.log('Profile ID before save:', this.profile.id); // Debug log
+
+  //   const request$ = this.profile.id
+  //     ? this.http.put(`http://127.0.0.1:8000/api/users/profiles/${this.profile.id}/`, formData, headers)
+  //     : this.http.post('http://127.0.0.1:8000/api/users/profiles/', formData, headers);
+
+  //   request$.subscribe({
+  //     next: () => {
+  //       Swal.fire({
+  //         icon: 'success',
+  //         title: 'Profile Saved',
+  //         text: 'Your profile has been successfully updated!',
+  //         confirmButtonColor: '#3085d6',
+  //         confirmButtonText: 'OK'
+  //       });
+  //       this.isReadonly = true;
+  //       this.disabled = true;
+  //     },
+  //     error: (err) => {
+  //       console.error('Save failed', err);
+  //       Swal.fire('Error', 'Failed to save profile', 'error');
+  //     }
+  //   });
+  // }
+
   save(): void {
     const token = this.authService.getToken();
-
     if (!this.profile || !this.profile.user || !token) return;
 
     const formData = new FormData();
     formData.append('user', this.profile.user.toString());
-    formData.append('yos', this.profile.yos || '');
     formData.append('nida', this.profile.nida || '');
     formData.append('phone_number', this.profile.phone_number || '');
-    formData.append('department', this.profile.department || '');
-    formData.append('program', this.profile.program || '');
+
+    // Append based on role
+    if (this.currentUserRole === 'student') {
+      formData.append('yos', this.profile.yos || '');
+      formData.append('program', this.profile.program || '');
+    }
+
+    if (this.currentUserRole !== 'admin') {
+      formData.append('department', this.profile.department || '');
+    }
 
     if (this.selectedFile) {
       formData.append('image', this.selectedFile);
@@ -97,8 +151,6 @@ export class ProfileComponent implements OnInit {
         'Authorization': `Bearer ${token}`
       })
     };
-
-    console.log('Profile ID before save:', this.profile.id); // Debug log
 
     const request$ = this.profile.id
       ? this.http.put(`http://127.0.0.1:8000/api/users/profiles/${this.profile.id}/`, formData, headers)
@@ -122,6 +174,7 @@ export class ProfileComponent implements OnInit {
       }
     });
   }
+
 
   onFileSelected(event: any): void {
     this.selectedFile = event.target.files[0];

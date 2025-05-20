@@ -1,55 +1,52 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { FooterComponent } from "../components/footer/footer.component";
 import { HeaderComponent } from "../components/header/header.component";
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-landing',
-  imports: [CommonModule, FooterComponent, HeaderComponent],
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    HttpClientModule,
+    FooterComponent
+  ],
   templateUrl: './landing.component.html',
-  styleUrl: './landing.component.css'
+  styleUrls: ['./landing.component.css']
 })
 export class LandingComponent {
+  loginForm: FormGroup;
+  loginError: string | null = null;
 
+  constructor(
+    private fb: FormBuilder,
+    private http: HttpClient,
+    private router: Router
+  ) {
+    this.loginForm = this.fb.group({
+      username: ['', Validators.required],
+      password: ['', Validators.required]
+    });
+  }
 
+  login() {
+    if (this.loginForm.invalid) return;
 
-  services = [
-    {
-      title: 'Certificate Request',
-      description: 'Request for your graduation or completion certificate.',
-      icon: 'bi bi-file-earmark-text'
-    },
-    {
-      title: 'Online Clearance',
-      description: 'Submit clearance forms digitally for approvals.',
-      icon: 'bi bi-check-circle'
-    },
-    {
-      title: 'Transcript Request',
-      description: 'Get your academic transcripts processed online.',
-      icon: 'bi bi-journal-text'
-    },
-    {
-      title: 'Professional Result Request',
-      description: 'Request verified professional exam results.',
-      icon: 'bi bi-award'
-    },
-    {
-      title: 'Track Requests',
-      description: 'Monitor the status of all your submitted requests.',
-      icon: 'bi bi-search'
-    },
-    {
-      title: 'Bimetric Verification',
-      description: 'Biometric verifications requests.',
-      icon: 'bi bi-fingerprint'
-    }
-
-
-
-
-
-  ];
-
-
+    this.http.post<any>(`${environment.apiBaseUrl}/token/`, this.loginForm.value).subscribe({
+      next: (res) => {
+        localStorage.setItem('access_token', res.access);
+        localStorage.setItem('refresh_token', res.refresh);
+        localStorage.setItem('user', JSON.stringify(res.user));
+        this.router.navigate(['/dashboard']);  // fix your route spelling here if needed
+      },
+      error: () => {
+        this.loginError = 'Invalid username or password.';
+      }
+    });
+  }
 }
