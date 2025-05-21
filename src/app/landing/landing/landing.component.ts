@@ -8,8 +8,6 @@ import { HeaderComponent } from "../components/header/header.component";
 import { environment } from '../../../environments/environment';
 
 
-
-
 @Component({
   selector: 'app-landing',
   standalone: true,
@@ -29,20 +27,16 @@ import { environment } from '../../../environments/environment';
 
 export class LandingComponent {
 
-@ViewChild('carousel', { static: false }) carousel!: ElementRef<HTMLElement>;
+  @ViewChild('carousel', { static: false }) carousel!: ElementRef;
 
-scrollLeft() {
-  if (this.carousel?.nativeElement?.scrollBy) {
+
+  scrollLeft() {
     this.carousel.nativeElement.scrollBy({ left: -250, behavior: 'smooth' });
   }
-}
 
-scrollRight() {
-  if (this.carousel?.nativeElement?.scrollBy) {
+  scrollRight() {
     this.carousel.nativeElement.scrollBy({ left: 250, behavior: 'smooth' });
   }
-}
-
 
   currentUserRole: '' | 'student' | 'hod' | 'bursar' | 'admin' = '';
 

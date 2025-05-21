@@ -45,20 +45,20 @@
           <!-- Blurred image background -->
           <img src="assets/logo/emblem.png" alt="Emblem"
             class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
-            style="filter: blur(2px); z-index: 0;" />
+            style="filter: blur(4px); z-index: 0;" />
 
           <!-- Cards container centered over image -->
           <div class="position-absolute top-50 start-50 translate-middle p-3"
             style="background: rgba(255, 255, 255, 0); max-width: 100%; overflow: hidden; border-radius: 0.5rem; z-index: 1;">
 
-            <div class="d-flex flex-nowrap overflow-auto gap-3 pb-2 hide-scrollbar"
+            <div  class="d-flex flex-nowrap overflow-auto gap-3 pb-2 hide-scrollbar"
               style="scroll-snap-type: x mandatory; white-space: nowrap;">
 
               <!-- Loop through services -->
-              <div class="card shadow-sm text-center p-3 flex-shrink-0"
-                style="min-width: 250px; scroll-snap-align: start;" *ngFor="let service of services">
+              <div  class="card shadow-sm text-center p-3 flex-shrink-0"
+                style="min-width: 250px; scroll-snap-align: start;" *ngFor="let service of services" style="background: rgba(255, 255, 255, 0.399);">
 
-                <div class="card-body" style="background: rgba(255, 255, 255, 0.041);">
+                <div class="card-body" >
                   <div class="mb-2 text-primary">
                     <i [class]="service.icon" style="font-size: 2rem;"></i>
                   </div>
