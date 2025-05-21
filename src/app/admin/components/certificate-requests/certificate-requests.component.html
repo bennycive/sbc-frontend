@@ -1,35 +1,38 @@
 <div class="container-fluid mt-4">
   <div class="row">
-    <!-- Transcript & Certificate Request Form -->
-    <div class="col-md-6 mb-4">
+    <!-- Selection -->
+    <div class="col-md-12 mb-3">
+      <label class="form-label fw-bold">Select Request Type</label>
+      <select class="form-select" [(ngModel)]="selectedRequestType">
+        <option value="">-- Select Type --</option>
+        <option value="certificate">Certificate Request</option>
+        <option value="transcript">Transcript Request</option>
+        <option value="both">Certificate & Transcript</option>
+        <option value="provisional">Provisional Result</option>
+      </select>
+    </div>
+
+    <!-- Certificate / Transcript / Both Form -->
+    <div class="col-md-6 mb-4" *ngIf="selectedRequestType === 'certificate' || selectedRequestType === 'transcript' || selectedRequestType === 'both'">
       <div class="card w-100">
-        <div class="card-header text-white" style="background-color: #022548;">Transcript & Certificate Request</div>
+        <div class="card-header text-white" style="background-color: #022548;">
+          {{ selectedRequestType === 'both' ? 'Certificate & Transcript' : (selectedRequestType === 'certificate' ? 'Certificate Request' : 'Transcript Request') }}
+        </div>
         <div class="card-body">
           <form [formGroup]="transcriptCertificateForm" (ngSubmit)="submitTranscriptCertificateRequest()">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" formControlName="both" id="both">
-              <label class="form-check-label" for="both">Certificate & Transcript</label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" formControlName="certificateOnly" id="certificateOnly">
-              <label class="form-check-label" for="certificateOnly">Certificate Only</label>
-            </div>
-            <div class="form-check mb-3">
-              <input class="form-check-input" type="checkbox" formControlName="transcriptOnly" id="transcriptOnly">
-              <label class="form-check-label" for="transcriptOnly">Transcript Only</label>
-            </div>
+            <input type="hidden" [value]="selectedRequestType" formControlName="requestType" />
             <div class="mb-3">
               <label for="copies" class="form-label">Number of Copies</label>
               <input type="number" class="form-control" formControlName="numberOfCopies" id="copies" required>
             </div>
-            <button type="submit" class="btn btn-success btn-md">Submit </button>
+            <button type="submit" class="btn btn-success btn-md">Submit</button>
           </form>
         </div>
       </div>
     </div>
 
-    <!-- Provisional Result Request Form -->
-    <div class="col-md-6 mb-4">
+    <!-- Provisional Result Form -->
+    <div class="col-md-6 mb-4" *ngIf="selectedRequestType === 'provisional'">
       <div class="card w-100">
         <div class="card-header text-white" style="background-color: #022548;">Provisional Result Request</div>
         <div class="card-body">
@@ -63,7 +66,7 @@
                 <option value="First Year to Second Year">First Year to Second Year</option>
               </select>
             </div>
-            <button type="submit" class="btn btn-primary btn-md ">Submit</button>
+            <button type="submit" class="btn btn-primary btn-md">Submit</button>
           </form>
         </div>
       </div>
@@ -71,7 +74,7 @@
   </div>
 
   <!-- Request Progress Table -->
-  <div class="card w-100">
+  <div class="card w-100 mt-4">
     <div class="card-header text-white" style="background-color: #022548;">Request Progress</div>
     <div class="card-body p-0">
       <table class="table table-bordered table-hover mb-0">

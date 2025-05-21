@@ -36,51 +36,8 @@
     </div>
 
 
-    <!-- Transcript Request Table -->
-    <div class="card mb-4">
-      <div class="card-header">Recent Transcript Requests</div>
-      <div class="card-body p-0">
-        <table class="table table-hover table-sm">
-          <thead>
-            <tr><th>ID</th><th>Date</th><th>Purpose</th><th>Status</th></tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let req of transcriptRequests">
-              <td>{{ req.requestId }}</td>
-              <td>{{ req.date }}</td>
-              <td>{{ req.purpose }}</td>
-              <td>{{ req.status }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
 
-    <!-- Certificate Collection Table -->
-    <div class="card mb-4">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        Certificate Collections
-        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#transcriptModal">
-          Request Transcript
-        </button>
-      </div>
-      <div class="card-body p-0">
-        <table class="table table-hover table-sm">
-          <thead>
-            <tr><th>ID</th><th>Date</th><th>Type</th><th>Status</th><th>Action</th></tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let cert of certificateCollections">
-              <td>{{ cert.certificateId }}</td>
-              <td>{{ cert.date }}</td>
-              <td>{{ cert.type }}</td>
-              <td>{{ cert.status }}</td>
-              <td><button class="btn btn-sm btn-outline-info">View</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+
   </div>
 
   <!-- HOD -->
