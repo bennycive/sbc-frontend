@@ -15,3 +15,23 @@
   background-color: #e6f2f9;
 }
 
+
+.overlay-services {
+  max-height: 400px;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 8px;
+}
+
+
+
+  .hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none; 
+  }
+
+

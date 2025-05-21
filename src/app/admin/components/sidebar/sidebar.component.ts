@@ -32,7 +32,7 @@ logout() {
   localStorage.removeItem('access_token');
   localStorage.removeItem('refresh_token');
   localStorage.removeItem('user');
-  this.router.navigate(['/auth/login']);
+  this.router.navigate(['/']);
 
 }
 
