@@ -35,9 +35,6 @@
       </div>
     </div>
 
-
-
-
   </div>
 
   <!-- HOD -->
@@ -61,8 +58,20 @@
       <div class="card-header">Transcript Requests for Verification</div>
       <div class="card-body p-0">
         <table class="table table-sm table-hover">
-          <thead><tr><th>Student</th><th>Course</th><th>Date</th></tr></thead>
-          <tbody><tr *ngFor="let r of verifiedRecords"><td>{{r.student}}</td><td>{{r.course}}</td><td>{{r.date}}</td></tr></tbody>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Course</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of verifiedRecords">
+              <td>{{r.student}}</td>
+              <td>{{r.course}}</td>
+              <td>{{r.date}}</td>
+            </tr>
+          </tbody>
         </table>
       </div>
     </div>
@@ -91,7 +100,13 @@
       <div class="card-header">Verified Financial Records</div>
       <div class="card-body p-0">
         <table class="table table-sm table-hover">
-          <thead><tr><th>Student</th><th>Amount</th><th>Date</th></tr></thead>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Amount</th>
+              <th>Date</th>
+            </tr>
+          </thead>
           <tbody>
             <tr *ngFor="let record of verifiedFinancials">
               <td>{{record.student}}</td>
@@ -104,46 +119,42 @@
     </div>
   </div>
 
-
-
   <!-- ADMIN DASHBOARD VIEW -->
-<div *ngIf="currentUserRole === 'admin'">
-  <!-- HOD-like Cards -->
-  <div class="row g-4 mb-4">
-    <div class="col-md-4" *ngFor="let hodCard of [
+  <div *ngIf="currentUserRole === 'admin'">
+    <!-- HOD-like Cards -->
+    <div class="row g-4 mb-4">
+      <div class="col-md-4" *ngFor="let hodCard of [
         { title: 'Classes', value: 5, icon: 'bi bi-easel' },
         { title: 'Departments', value: 3, icon: 'bi bi-building' },
         { title: 'Students', value: 240, icon: 'bi bi-people' }
       ]">
-      <div class="card summary-card h-100 shadow-sm">
-        <div class="card-body">
-          <h5><i [class]="hodCard.icon + ' me-2 text-success'"></i>{{ hodCard.title }}</h5>
-          <p class="fs-5 fw-semibold">{{ hodCard.value }}</p>
+        <div class="card summary-card h-100 shadow-sm">
+          <div class="card-body">
+            <h5><i [class]="hodCard.icon + ' me-2 text-success'"></i>{{ hodCard.title }}</h5>
+            <p class="fs-5 fw-semibold">{{ hodCard.value }}</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Bursar-like Cards -->
-  <div class="row g-4 mb-4">
-    <div class="col-md-3" *ngFor="let bursarCard of [
+    <!-- Bursar-like Cards -->
+    <div class="row g-4 mb-4">
+      <div class="col-md-3" *ngFor="let bursarCard of [
         { title: 'All Requests', value: 120, icon: 'bi bi-envelope' },
         { title: 'Pending', value: 35, icon: 'bi bi-clock-history' },
         { title: 'Completed', value: 70, icon: 'bi bi-check-circle' },
         { title: 'Rejected', value: 15, icon: 'bi bi-x-circle' }
       ]">
-      <div class="card summary-card h-100 shadow-sm border-start">
-        <div class="card-body">
-          <h6><i [class]="bursarCard.icon + ' me-2 text-primary'"></i>{{ bursarCard.title }}</h6>
-          <p class="fs-5 fw-bold mb-0">{{ bursarCard.value }}</p>
+        <div class="card summary-card h-100 shadow-sm border-start">
+          <div class="card-body">
+            <h6><i [class]="bursarCard.icon + ' me-2 text-primary'"></i>{{ bursarCard.title }}</h6>
+            <p class="fs-5 fw-bold mb-0">{{ bursarCard.value }}</p>
+          </div>
         </div>
       </div>
     </div>
+
   </div>
-
-
-</div>
-
 
   <!-- SHARED CHART VISUALIZATION -->
   <div *ngIf="['admin', 'hod', 'bursar'].includes(currentUserRole)" class="card mb-4">

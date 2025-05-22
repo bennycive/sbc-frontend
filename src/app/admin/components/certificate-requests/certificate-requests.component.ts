@@ -24,13 +24,17 @@ export class CertificateRequestsComponent implements OnInit {
     });
 
     this.provisionalForm = this.fb.group({
-      currentAddress: ['', Validators.required],
-      emailOrPhone: ['', Validators.required],
-      yearOfAdmission: ['', Validators.required],
-      yearOfStudy: ['', Validators.required],
+
+      current_address: ['', Validators.required],
+      email_or_phone: ['', Validators.required],
+      year_of_admission: ['', Validators.required],
+      year_of_study: ['', Validators.required],
       programme: ['', Validators.required],
-      semesterRange: ['', Validators.required]
+      semester_range: ['', Validators.required],
+
     });
+
+    
   }
 
   ngOnInit(): void {
@@ -127,55 +131,41 @@ export class CertificateRequestsComponent implements OnInit {
 
 
   submitProvisionalRequest() {
-  if (!this.provisionalForm.valid) {
-    Swal.fire('Incomplete!', 'Please complete all provisional request fields.', 'warning');
-    return;
-  }
-
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const userId = user.id;
-
-  if (!userId) {
-    Swal.fire('Error', 'User not found. Please log in again.', 'error');
-    return;
-  }
-
-  const form = this.provisionalForm.value;
-
-  const requestBody = {
-    ...form,
-    user: userId  // add user id here
-  };
-
-  const token = localStorage.getItem('access_token');
-  const headers = {
-    headers: {
-      Authorization: `Bearer ${token}`
+    if (!this.provisionalForm.valid) {
+      Swal.fire('Incomplete!', 'Please complete all provisional request fields.', 'warning');
+      return;
     }
-  };
 
-  this.http.post('http://localhost:8000/api/users/provisional-requests/', requestBody, headers)
-    .subscribe({
-      next: () => {
-        this.submittedRequests.push({
-          type: `Provisional Result (${form.semesterRange})`,
-          copies: 1,
-          status: 'Pending Bursar Verification',
-          date: new Date()
-        });
+    const form = this.provisionalForm.value;
 
-        Swal.fire('Success', 'Provisional request submitted.', 'success');
-        this.provisionalForm.reset();
-        this.selectedRequestType = '';
-      },
-      error: (err) => {
-        console.error('Backend error:', err.error);
-        Swal.fire('Error', 'Failed to submit provisional request. Check console for details.', 'error');
+    const token = localStorage.getItem('access_token');
+    const headers = {
+      headers: {
+        Authorization: `Bearer ${token}`
       }
+    };
 
-    });
-    
-}
+    this.http.post('http://localhost:8000/api/users/provisional-requests/', form, headers)
+      .subscribe({
+        next: () => {
+          this.submittedRequests.push({
+            type: `Provisional Result (${form.semesterRange})`,
+            copies: 1,
+            status: 'Pending Bursar Verification',
+            date: new Date()
+          });
+
+          Swal.fire('Success', 'Provisional request submitted.', 'success');
+          this.provisionalForm.reset();
+          this.selectedRequestType = '';
+        },
+        error: (err) => {
+          console.error(err);
+          Swal.fire('Error', 'Failed to submit provisional request.', 'error');
+        }
+      });
+  }
+
 
 
 }

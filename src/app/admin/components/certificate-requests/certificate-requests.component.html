@@ -13,10 +13,12 @@
     </div>
 
     <!-- Certificate / Transcript / Both Form -->
-    <div class="col-md-6 mb-4" *ngIf="selectedRequestType === 'certificate' || selectedRequestType === 'transcript' || selectedRequestType === 'both'">
+    <div class="col-md-6 mb-4"
+      *ngIf="selectedRequestType === 'certificate' || selectedRequestType === 'transcript' || selectedRequestType === 'both'">
       <div class="card w-100">
         <div class="card-header text-white" style="background-color: #022548;">
-          {{ selectedRequestType === 'both' ? 'Certificate & Transcript' : (selectedRequestType === 'certificate' ? 'Certificate Request' : 'Transcript Request') }}
+          {{ selectedRequestType === 'both' ? 'Certificate & Transcript' : (selectedRequestType === 'certificate' ?
+          'Certificate Request' : 'Transcript Request') }}
         </div>
         <div class="card-body">
           <form [formGroup]="transcriptCertificateForm" (ngSubmit)="submitTranscriptCertificateRequest()">
@@ -39,19 +41,19 @@
           <form [formGroup]="provisionalForm" (ngSubmit)="submitProvisionalRequest()">
             <div class="mb-3">
               <label class="form-label">Current Address</label>
-              <input type="text" class="form-control" formControlName="currentAddress" required>
+              <input type="text" class="form-control" formControlName="current_address" required>
             </div>
             <div class="mb-3">
               <label class="form-label">E-Mail Address / Phone</label>
-              <input type="text" class="form-control" formControlName="emailOrPhone" required>
+              <input type="text" class="form-control" formControlName="email_or_phone" required>
             </div>
             <div class="mb-3">
               <label class="form-label">Year of Admission</label>
-              <input type="text" class="form-control" formControlName="yearOfAdmission" required>
+              <input type="text" class="form-control" formControlName="year_of_admission" required>
             </div>
             <div class="mb-3">
               <label class="form-label">Year of Study</label>
-              <input type="text" class="form-control" formControlName="yearOfStudy" required>
+              <input type="text" class="form-control" formControlName="year_of_study" required>
             </div>
             <div class="mb-3">
               <label class="form-label">Programme of Study</label>
@@ -59,11 +61,11 @@
             </div>
             <div class="mb-3">
               <label class="form-label">Semester / Range</label>
-              <select class="form-select" formControlName="semesterRange">
+              <select class="form-select" formControlName="semester_range" required>
                 <option value="">Select</option>
-                <option value="One Semester">One Semester</option>
-                <option value="Two Semesters">Two Semesters</option>
-                <option value="First Year to Second Year">First Year to Second Year</option>
+                <option value="one">Semester I</option>
+                <option value="two">Semester II</option>
+                <option value="all">First Year to Second Year</option>
               </select>
             </div>
             <button type="submit" class="btn btn-primary btn-md">Submit</button>
