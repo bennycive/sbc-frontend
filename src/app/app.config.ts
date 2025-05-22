@@ -1,5 +1,6 @@
 // src/app/app.config.ts
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+
 import {
   ApplicationConfig,
   importProvidersFrom,

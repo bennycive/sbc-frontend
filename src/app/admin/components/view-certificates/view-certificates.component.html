@@ -39,7 +39,7 @@
         </div>
         <div *ngIf="isPDF(previewCert.certificate_file_url)">
           <iframe
-            [src]="previewCert.certificate_file_url"
+            [src]="getSafeUrl(previewCert.certificate_file_url)"
             width="100%"
             height="500px"
             style="border: 1px solid #ccc; border-radius: 5px;"
