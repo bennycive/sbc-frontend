@@ -1,8 +1,39 @@
 .card-header {
-  background-color: #022548;
-  color: #ffffff !important;
+  background-color: #022548; /* Maintained from original */
+  color: #ffffff !important;   /* Maintained from original */
 }
 
+.table-head { /* You had .table-head, ensure it's used or use the standard thead styling */
+  background-color: #e9ecef; /* Light grey for table header */
+}
 
+.table-row-clickable {
+  cursor: pointer;
+}
+
+.table-row-clickable:hover {
+  background-color: #f8f9fa; /* Slight hover effect for clickable rows */
+}
+
+/* Styling for verification progress items */
+.list-group-item-success {
+  border-left: 5px solid #198754; /* Green border for success */
+}
+.list-group-item-danger { /* If you want to highlight incomplete critical steps */
+  border-left: 5px solid #dc3545; /* Red border for danger/incomplete */
+}
+.list-group-item {
+    border-left: 5px solid #ffc107; /* Yellow/warning border for pending by default */
+}
+
+/* Ensure icons are vertically aligned with text if needed */
+.bi {
+  vertical-align: middle;
+  margin-right: 0.25rem;
+}
+
+.btn .bi { /* For icons inside buttons */
+    margin-right: 0.35rem;
+}
 
 

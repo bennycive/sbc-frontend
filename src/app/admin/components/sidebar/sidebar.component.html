@@ -32,7 +32,7 @@
       </a>
     </li>
 
-    <li *ngIf="currentUserRole === 'admin' || currentUserRole === 'hod'">
+    <li *ngIf="currentUserRole === 'admin' || currentUserRole === 'hod' || currentUserRole === 'exam-officer'">
       <a class="nav-link text-white" (click)="verifyRecords()">
         <i class="bi bi-patch-check me-2"></i> Verify Records
       </a>

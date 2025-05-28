@@ -4,8 +4,6 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../auth/auth.service';
 
 
-
-
 @Component({
   selector: 'app-sidebar',
   imports: [CommonModule],
@@ -14,82 +12,83 @@ import { AuthService } from '../../../auth/auth.service';
 })
 export class SidebarComponent {
 
-  currentUserRole: '' | 'student' | 'hod' | 'bursar' | 'admin' | 'admin'='';
+  currentUserRole: '' | 'exam-officer' | 'student' | 'hod' | 'bursar' | 'admin' | 'admin' = '';
 
   user: any = null;
 
-constructor(private router: Router,private authService: AuthService) {
-  this.user = this.authService.getUser();
-}
+  constructor(private router: Router, private authService: AuthService) {
+    this.user = this.authService.getUser();
+  }
 
-ngOnInit(): void {
-  this.user = this.authService.getUser();
-  this.currentUserRole = this.user?.role || '';
+  ngOnInit(): void {
 
-}
+    this.user = this.authService.getUser();
+    this.currentUserRole = this.user?.role || '';
 
-logout() {
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('refresh_token');
-  localStorage.removeItem('user');
-  this.router.navigate(['/']);
+  }
 
-}
+  logout() {
 
-//  profile informations for all users
-profile(){
-  this.router.navigate(['/dashbord/profile']);
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
+    this.router.navigate(['/']);
 
+  }
 
-}
+  //  profile informations for all users
+  profile() {
 
-// Request all academic cerificates
-requestAcademicCertificates(){
-  this.router.navigate(['/dashbord/certificates-requests']);
-}
+    this.router.navigate(['/dashbord/profile']);
 
-//  add the ids
-addCertificateAndIds(){
-  this.router.navigate(['/dashbord/certificates-and-ids-list']);
-}
+  }
 
-//  add users
-registerUsers()
-{
-  this.router.navigate(['/dashbord/users']);
-}
+  // Request all academic cerificates
+  requestAcademicCertificates() {
+    this.router.navigate(['/dashbord/certificates-requests']);
+  }
 
+  //  add the ids
+  addCertificateAndIds() {
+    this.router.navigate(['/dashbord/certificates-and-ids-list']);
+  }
 
-// biometric setup
-biometricSetup()
-{
-   this.router.navigate(['dashbord/biometric-setups'])
-}
-
-//  financial verification
-financiaVerification(){
-   this.router.navigate(['/dashbord/financial-verifications'])
-}
-
-verifyRecords(){
-
-   this.router.navigate(['/dashbord/verify-records'])
-
-}
+  //  add users
+  registerUsers() {
+    this.router.navigate(['/dashbord/users']);
+  }
 
 
-financiaRecords(){
-   this.router.navigate(['/dashbord/financial-records'])
-}
+  // biometric setup
+  biometricSetup() {
+    this.router.navigate(['dashbord/biometric-setups'])
+  }
 
-collage(){
-   this.router.navigate(['/dashbord/collage'])
-}
+  //  financial verification
+  financiaVerification() {
+    this.router.navigate(['/dashbord/financial-verifications'])
+  }
+
+  verifyRecords() {
+
+    this.router.navigate(['/dashbord/verify-records'])
+
+  }
 
 
-viewCertificateAndIds(){
-   this.router.navigate(['/dashbord/view-certificates'])
-}
+  financiaRecords() {
+    this.router.navigate(['/dashbord/financial-records'])
+  }
+
+  collage() {
+    this.router.navigate(['/dashbord/collage'])
+  }
+
+
+  viewCertificateAndIds() {
+    this.router.navigate(['/dashbord/view-certificates'])
+  }
+
 
 
 }
