@@ -1,112 +1,378 @@
-import { CommonModule } from '@angular/common';
-import { Component,EventEmitter, Output  } from '@angular/core';
-import { ChartConfiguration } from 'chart.js';
+import { CommonModule, DatePipe } from '@angular/common';
+import { Component, OnInit, OnDestroy, Output, EventEmitter, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../auth/auth.service';
+import { AuthService } from '../../auth/auth.service'; // Adjust path as needed
+import { HttpClient, HttpClientModule }from '@angular/common/http';
+import { forkJoin, of, Subscription } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { Chart, registerables, ChartConfiguration } from 'chart.js/auto'; // Import ChartConfiguration
 
+// --- Interfaces ---
+interface CustomUser {
+  id: number;
+  username: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: 'student' | 'hod' | 'bursar' | 'admin' | '';
+  department?: string; // Program name or department user belongs to
+  biometric_setup_complete?: boolean; // Example field for biometric status
+  profile?: { // Example if biometric info is in profile
+    nida?: string;
+    // ... other profile fields
+  };
+}
+
+interface TranscriptRequestItem { // For data coming directly from API
+  id: number;
+  user: { // Assuming user is now a nested object from your serializers
+    id: number;
+    first_name: string;
+    last_name: string;
+    username: string;
+    department?: string; // Or program
+  } | number; // Fallback if API sometimes sends ID
+  request_type: string;
+  submitted_at: string; // Assuming ISO date string
+  hod_verified: boolean;
+  bursar_verified: boolean;
+  exam_officer_approved: boolean;
+  // Add other fields from your API response for these items
+  programme?: string; // If provisional requests have this
+  program_name?: string; // If transcript requests have this from serializer
+}
+
+interface SummaryCard {
+  title: string;
+  value: string | number;
+  icon: string;
+  colorClass?: string; // Optional: e.g., 'text-primary', 'text-success'
+}
+
+interface TableRow {
+  id?: number; // Useful for actions or navigation
+  student?: string;
+  course?: string;  // For HOD table, represents Program
+  program?: string; // General program field
+  request_type?: string; // Explicitly added
+  amount?: string | number;
+  date?: string | Date; // Can be pre-formatted string or Date object
+  [key: string]: any; // Keep for flexibility if other dynamic columns are added
+}
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule,FormsModule],
+  standalone: true,
+  imports: [CommonModule, FormsModule, HttpClientModule, DatePipe],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css'
+  styleUrls: ['./dashboard.component.css'],
+  providers: [DatePipe]
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
+  @Output() toggleSidebar = new EventEmitter<void>();
+  @ViewChild('requestChart') requestChartCanvas!: ElementRef<HTMLCanvasElement>;
+  private chartInstance?: Chart;
 
- currentUserRole: '' | 'student' | 'hod' | 'bursar' | 'admin' | 'admin'='';
-
-  filterBy: string = 'daily';
-
+  currentUserRole: 'student' | 'hod' | 'bursar' | 'admin' | '' = '';
+  filterBy: string = 'daily'; // For chart
   formattedDate: string = '';
-  user: any = null;
+  user: CustomUser | null = null;
+  private subscriptions: Subscription = new Subscription();
 
-  constructor(private router: Router, private authService: AuthService) {
-    this.user = this.authService.getUser();
+  // Dynamic Data Properties
+  studentSummaryCards: SummaryCard[] = [];
+  hodSummaryCards: SummaryCard[] = [];
+  hodVerificationRequests: TableRow[] = [];
+  bursarSummaryCards: SummaryCard[] = [];
+  bursarVerifiedFinancials: TableRow[] = [];
+  adminHodLikeCards: SummaryCard[] = [];
+  adminBursarLikeCards: SummaryCard[] = [];
 
+  // API Endpoints
+  private API_BASE_URL = 'http://localhost:8000/api/'; // Adjust if your base URL is different
+  private apiEndpoints = {
+    users: `${this.API_BASE_URL}users/users/`, // e.g., /api/users/users/{id}/
+    transcriptCertificateRequests: `${this.API_BASE_URL}users/transcript-certificate-requests/`,
+    // DEFINE THESE BACKEND ENDPOINTS:
+    hodSummary: `${this.API_BASE_URL}dashboard/hod/summary/`,
+    // For HOD table, use transcriptCertificateRequests and filter by HOD status or a specific endpoint
+    hodPendingRequests: `${this.API_BASE_URL}users/transcript-certificate-requests/`,
+    bursarSummary: `${this.API_BASE_URL}dashboard/bursar/summary/`,
+    bursarVerifiedFinancials: `${this.API_BASE_URL}dashboard/bursar/financials/`,
+    adminSummary: `${this.API_BASE_URL}dashboard/admin/summary/`,
+    requestTrendsChart: `${this.API_BASE_URL}dashboard/chart/request-trends/`
+  };
+
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private http: HttpClient,
+    private datePipe: DatePipe
+  ) {
+    Chart.register(...registerables);
   }
-
-
 
   ngOnInit(): void {
     this.formattedDate = this.getFormattedDate();
     this.user = this.authService.getUser();
-    this.currentUserRole = this.user?.role || '';
 
+    if (this.user && this.user.id) {
+      this.currentUserRole = this.user.role;
+      this.loadDashboardData();
+    } else {
+      console.error("Dashboard: Logged in user or user ID not found from AuthService.");
+      // Consider redirecting to login: this.router.navigate(['/login']);
+    }
   }
 
+  ngAfterViewInit(): void {
+    if (this.currentUserRole && !['student'].includes(this.currentUserRole)) {
+       this.renderChart();
+    }
+  }
 
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+    if (this.chartInstance) {
+      this.chartInstance.destroy();
+    }
+  }
 
-  @Output() toggleSidebar = new EventEmitter<void>();
+  loadDashboardData(): void {
+    if (!this.user || !this.user.id) return;
 
+    switch (this.currentUserRole) {
+      case 'student':
+        this.fetchStudentDashboardData(this.user.id);
+        break;
+      case 'hod':
+        this.fetchHodDashboardData();
+        break;
+      case 'bursar':
+        this.fetchBursarDashboardData();
+        break;
+      case 'admin':
+        this.fetchAdminDashboardData();
+        break;
+      default:
+        console.warn("Unknown user role or no role defined for dashboard:", this.currentUserRole);
+    }
+  }
 
   getFormattedDate(): string {
     const date = new Date();
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-
-    const dayName = days[date.getDay()];
+    const dayName = this.datePipe.transform(date, 'EEEE');
     const day = date.getDate();
-    const month = months[date.getMonth()];
+    const month = this.datePipe.transform(date, 'MMMM');
     const year = date.getFullYear();
-
     const getOrdinal = (n: number): string => {
-      if (n > 3 && n < 21) return 'th';
-      switch (n % 10) {
-        case 1: return 'st';
-        case 2: return 'nd';
-        case 3: return 'rd';
-        default: return 'th';
-      }
+        if (n > 3 && n < 21) return 'th';
+        switch (n % 10) {
+          case 1: return 'st';
+          case 2: return 'nd';
+          case 3: return 'rd';
+          default: return 'th';
+        }
     };
-
-    return `${dayName} ${day}<sup>${getOrdinal(day)}</sup> of ${month}, ${year}`;
-
+    return `<strong>${dayName}</strong>, ${month} ${day}<sup>${getOrdinal(day)}</sup>, ${year}`;
   }
 
+  fetchStudentDashboardData(userId: number): void {
+    const apiUrl = `${this.apiEndpoints.transcriptCertificateRequests}?user=${userId}`;
+    console.log('Fetching student requests from URL:', apiUrl); // Log the URL
 
-  studentCards = [
-    { icon: 'fas fa-graduation-cap', title: 'Total Requests', value: '15' },
-    { icon: 'fas fa-file-alt', title: 'Pending Requests', value: '5' },
-    { icon: 'fas fa-check', title: 'Approved Requests', value: '10' }
-  ];
+    const requestsSub = this.http.get<TranscriptRequestItem[]>(apiUrl)
+      .pipe(
+        map(requests => {
+          // This mapping happens on the data *received* from the backend.
+          // If the backend doesn't filter, 'requests' will be all requests.
+          console.log(`Received ${requests.length} requests for student ID ${userId}. If this is all requests, backend filtering for '?user=${userId}' is not working.`);
+          const totalRequests = requests.length;
+          const readyCount = requests.filter(
+            req => req.hod_verified && req.bursar_verified && req.exam_officer_approved
+          ).length;
+          return { totalRequests, readyCount };
+        }),
+        catchError(error => {
+          console.error(`Error fetching student transcript/certificate requests for user ${userId}:`, error);
+          return of({ totalRequests: 0, readyCount: 0 });
+        })
+      )
+      .subscribe(data => {
+        let biometricStatus = 'Pending';
+        if (this.user?.biometric_setup_complete === true) {
+            biometricStatus = 'Completed';
+        } else if (this.user?.profile?.nida) {
+            biometricStatus = 'Completed';
+        }
 
-  hodCards = [
-    { icon: 'fas fa-users', title: 'Total Students', value: '150' },
-    { icon: 'fas fa-chalkboard-teacher', title: 'Courses Offered', value: '12' }
-  ];
+        this.studentSummaryCards = [
+          { title: 'My Requests', value: data.totalRequests, icon: 'bi bi-journal-text', colorClass: 'text-primary' },
+          { title: 'Certificates Ready', value: data.readyCount, icon: 'bi bi-file-earmark-check', colorClass: 'text-primary' },
+          { title: 'Biometric Status', value: biometricStatus, icon: 'bi bi-fingerprint', colorClass: 'text-primary' }
+        ];
+      });
+    this.subscriptions.add(requestsSub);
+  }
 
-  bursarCards = [
-    { icon: 'fas fa-wallet', title: 'Total Financials', value: '$50,000' },
-    { icon: 'fas fa-credit-card', title: 'Pending Payments', value: '$2,000' }
-  ];
+  fetchHodDashboardData(): void {
+    const summarySub = this.http.get<any>(this.apiEndpoints.hodSummary)
+      .pipe(catchError(() => of({ classes: 0, departments: 0, students: 0 })))
+      .subscribe(summary => {
+        this.hodSummaryCards = [
+          { title: 'Classes Managed', value: summary.classes || 0, icon: 'bi bi-easel', colorClass: 'text-success' },
+          { title: 'Departments Overseen', value: summary.departments || 0, icon: 'bi bi-building', colorClass: 'text-success' },
+          { title: 'Total Students in Depts', value: summary.students || 0, icon: 'bi bi-people', colorClass: 'text-success' }
+        ];
+      });
+    this.subscriptions.add(summarySub);
 
-  transcriptRequests = [
-    { requestId: 'TR123', date: '2025-05-05', purpose: 'Graduation', status: 'Approved' },
-    { requestId: 'TR124', date: '2025-05-06', purpose: 'Job Application', status: 'Pending' }
-  ];
+    const verificationSub = this.http.get<TranscriptRequestItem[]>(`${this.apiEndpoints.hodPendingRequests}?hod_verified=false&exam_officer_approved=false`)
+      .pipe(
+        map(requests => requests.map((req): TableRow => {
+          let studentName = 'N/A';
+          let studentProgram = 'N/A';
+          if (typeof req.user === 'object' && req.user !== null) {
+            studentName = `${req.user.first_name || ''} ${req.user.last_name || ''}`.trim() || req.user.username || 'Unknown User';
+            studentProgram = req.user.department || 'N/A';
+          } else if (req.user) {
+            studentName = `User ID: ${req.user}`;
+          }
+          return {
+            id: req.id,
+            student: studentName,
+            course: studentProgram,
+            request_type: req.request_type,
+            date: this.datePipe.transform(req.submitted_at, 'mediumDate') || 'N/A',
+          };
+        })),
+        catchError((err) => {
+          console.error("Error fetching HOD verification list:", err);
+          return of([]);
+        })
+      )
+      .subscribe(data => {
+        this.hodVerificationRequests = data;
+      });
+    this.subscriptions.add(verificationSub);
+    if (this.requestChartCanvas?.nativeElement) this.renderChart();
+  }
 
-  certificateCollections = [
-    { certificateId: 'C123', date: '2025-05-05', type: 'Degree', status: 'Collected' },
-    { certificateId: 'C124', date: '2025-05-06', type: 'Transcript', status: 'Pending' }
-  ];
+  fetchBursarDashboardData(): void {
+    const summarySub = this.http.get<any>(this.apiEndpoints.bursarSummary)
+      .pipe(catchError(() => of({ all_requests: 0, pending_bursar: 0, completed_by_bursar: 0, rejected_by_bursar: 0 })))
+      .subscribe(summary => {
+        this.bursarSummaryCards = [
+          { title: 'All Financial Requests', value: summary.all_requests || 0, icon: 'bi bi-envelope', colorClass: 'text-primary' },
+          { title: 'Pending My Verification', value: summary.pending_bursar || 0, icon: 'bi bi-clock-history', colorClass: 'text-primary' },
+          { title: 'Verified by Me', value: summary.completed_by_bursar || 0, icon: 'bi bi-check-circle', colorClass: 'text-primary' },
+          { title: 'Rejected by Me', value: summary.rejected_by_bursar || 0, icon: 'bi bi-x-circle', colorClass: 'text-primary' }
+        ];
+      });
+    this.subscriptions.add(summarySub);
 
-  verifiedRecords = [
-    { student: 'John Doe', course: 'Computer Science', date: '2025-05-05' }
-  ];
+    const financialsSub = this.http.get<any[]>(`${this.apiEndpoints.bursarVerifiedFinancials}?bursar_verified=true&limit=10`)
+      .pipe(
+        map(records => records.map((rec): TableRow => {
+            let studentName = 'N/A';
+            if (typeof rec.user === 'object' && rec.user !== null) {
+                 studentName = `${rec.user.first_name || ''} ${rec.user.last_name || ''}`.trim() || rec.user.username || 'Unknown';
+            } else if (rec.student_name) {
+                 studentName = rec.student_name;
+            } else if (rec.user_id || rec.user) {
+                 studentName = `User ID: ${rec.user_id || rec.user}`;
+            }
+            return {
+                student: studentName,
+                amount: this.datePipe.transform(rec.amount_paid || rec.amount, 'currency', 'USD', 'symbol') || '$0.00',
+                date: this.datePipe.transform(rec.payment_date || rec.date, 'mediumDate') || 'N/A'
+            };
+        })),
+        catchError((err) => {
+            console.error("Error fetching bursar financials:", err);
+            return of([]);
+        })
+      )
+      .subscribe(data => {
+        this.bursarVerifiedFinancials = data;
+      });
+    this.subscriptions.add(financialsSub);
+    if (this.requestChartCanvas?.nativeElement) this.renderChart();
+  }
 
-  verifiedFinancials = [
-    { student: 'Jane Doe', amount: '$500', date: '2025-05-05' }
-  ];
+  fetchAdminDashboardData(): void {
+    const adminSummarySub = this.http.get<any>(this.apiEndpoints.adminSummary)
+      .pipe(catchError(() => of({
+        total_classes: 0, total_departments: 0, total_students: 0,
+        total_requests: 0, total_pending: 0, total_completed: 0, total_rejected: 0
+      })))
+      .subscribe(summary => {
+        this.adminHodLikeCards = [
+          { title: 'Total Classes', value: summary.total_classes || 0, icon: 'bi bi-easel', colorClass: 'text-success' },
+          { title: 'Total Departments', value: summary.total_departments || 0, icon: 'bi bi-building', colorClass: 'text-success' },
+          { title: 'Total Students', value: summary.total_students || 0, icon: 'bi bi-people', colorClass: 'text-success' }
+        ];
+        this.adminBursarLikeCards = [
+          { title: 'Total System Requests', value: summary.total_requests || 0, icon: 'bi bi-envelope-paper', colorClass: 'text-primary' },
+          { title: 'Total Pending Verifications', value: summary.total_pending || 0, icon: 'bi bi-hourglass-split', colorClass: 'text-primary' },
+          { title: 'Total Completed Requests', value: summary.total_completed || 0, icon: 'bi bi-patch-check', colorClass: 'text-primary' },
+          { title: 'Total Rejected', value: summary.total_rejected || 0, icon: 'bi bi-x-octagon', colorClass: 'text-primary' }
+        ];
+      });
+    this.subscriptions.add(adminSummarySub);
+    if (this.requestChartCanvas?.nativeElement) this.renderChart();
+  }
 
-  recentActivities = [
-    { id: '1', user: 'Admin', status: 'Active', statusClass: 'success', date: '2025-05-05' },
-    { id: '2', user: 'John Doe', status: 'Inactive', statusClass: 'danger', date: '2025-05-06' }
-  ];
+  renderChart(): void {
+    if (!this.requestChartCanvas || !this.requestChartCanvas.nativeElement) {
+        console.warn('Chart canvas not ready for rendering in renderChart.');
+        if (document.readyState === "complete") {
+             setTimeout(() => this.renderChart(), 100);
+        }
+        return;
+    }
+    const ctx = this.requestChartCanvas.nativeElement.getContext('2d');
+    if (!ctx) {
+      console.error('Failed to get chart context');
+      return;
+    }
+    if (this.chartInstance) {
+      this.chartInstance.destroy();
+    }
 
+    this.http.get<{labels: string[], data: number[]}>(`${this.apiEndpoints.requestTrendsChart}?filter=${this.filterBy}`)
+      .pipe(catchError(() => of({ labels: ['No Data Available'], data: [0] })))
+      .subscribe(chartData => {
+        this.chartInstance = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: chartData.labels.length > 0 ? chartData.labels : ['N/A'],
+            datasets: [{
+              label: 'Requests',
+              data: chartData.data.length > 0 ? chartData.data : [0],
+              borderColor: 'rgb(75, 192, 192)',
+              backgroundColor: 'rgba(75, 192, 192, 0.2)',
+              tension: 0.1,
+              fill: true,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#eaecef'} },
+              x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#eaecef'} }
+            },
+            plugins: { legend: { labels: { color: '#eaecef' } } }
+          }
+        });
+      });
+  }
 
-  
+  onFilterByChange(): void {
+    if (this.currentUserRole && !['student'].includes(this.currentUserRole)) {
+        this.renderChart();
+    }
+  }
 }
