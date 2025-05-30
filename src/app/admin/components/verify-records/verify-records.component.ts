@@ -71,26 +71,157 @@ export class VerifyRecordsComponent implements OnInit {
     // this.role = this.authService.getUserRole();
   }
 
+  // fetchRecords() {
+  //   this.records = [];
+  //   const requestsToFetch: any[] = [];
+
+  //   if (this.role === 'hod' || this.role === 'exam_officer' || this.role === 'admin') {
+  //     requestsToFetch.push(
+  //       this.http.get<any[]>(this.apiEndpoints.transcriptCertificateRequests)
+  //         .pipe(
+  //           map(data => data.map(item => ({
+  //             ...item,
+  //             id: item.id,
+  //             request_type: item.request_type,
+  //             student_name: item.user.first_name + ' ' + item.user.last_name,
+  //             program: item.programme,
+  //             submitted_at: new Date(item.submitted_at),
+  //             hod_verified: item.hod_verified,
+  //             bursar_verified: item.bursar_verified,
+  //             exam_officer_verified: item.exam_officer_approved,
+  //             user_id: item.user
+  //           }))),
+  //           catchError(error => {
+  //             console.error('Error fetching transcript/certificate requests:', error);
+  //             return of([]);
+  //           })
+  //         )
+  //     );
+
+  //     requestsToFetch.push(
+  //       this.http.get<any[]>(this.apiEndpoints.provisionalRequests)
+  //         .pipe(
+  //           map(data => data.map(item => ({
+  //             ...item,
+  //             id: item.id,
+  //             request_type: 'provisional',
+  //             student_name: item.first_name + ' ' + item.last_name,
+  //             program: item.programme,
+  //             submitted_at: new Date(item.submitted_at),
+  //             hod_verified: item.hod_verified,
+  //             bursar_verified: item.bursar_verified,
+  //             exam_officer_verified: item.exam_officer_approved,
+  //             user_id: item.user
+  //           }))),
+  //           catchError(error => {
+  //             console.error('Error fetching provisional requests:', error);
+  //             return of([]);
+  //           })
+  //         )
+  //     );
+  //   }
+
+  //   if (requestsToFetch.length === 0 && (this.role === 'bursar')) {
+  //       requestsToFetch.push(
+  //         this.http.get<any[]>(this.apiEndpoints.transcriptCertificateRequests)
+  //           .pipe(map(data => data.map(item => ({ ...item, request_type: item.request_type, student_name: item.user_username, program: item.user_program, submitted_at: new Date(item.submitted_at), hod_verified: item.hod_verified, bursar_verified: item.bursar_verified, exam_officer_verified: item.exam_officer_approved, user_id: item.user }))), catchError(() => of([])))
+  //       );
+  //       requestsToFetch.push(
+  //         this.http.get<any[]>(this.apiEndpoints.provisionalRequests)
+  //           .pipe(map(data => data.map(item => ({ ...item, request_type: 'provisional', student_name: item.user_username, program: item.programme, submitted_at: new Date(item.submitted_at), hod_verified: item.hod_verified, bursar_verified: item.bursar_verified, exam_officer_verified: item.exam_officer_approved, user_id: item.user }))), catchError(() => of([])))
+  //       );
+  //   }
+
+  //   forkJoin(requestsToFetch).subscribe({
+  //     next: (allResponses: any[][]) => {
+  //       allResponses.forEach(responseArray => {
+  //         this.records.push(...responseArray);
+  //       });
+  //       this.records = this.records.filter((record, index, self) =>
+  //           index === self.findIndex((r) => (
+  //             r.id === record.id && r.request_type === record.request_type
+  //           ))
+  //       );
+  //       this.updateSummary();
+  //       this.calculateCertificatesRequestedPerYear();
+  //       this.applyFilter();
+  //     },
+  //     error: (error) => {
+  //       console.error('Error fetching combined records:', error);
+  //     }
+  //   });
+  // }
+
   fetchRecords() {
     this.records = [];
     const requestsToFetch: any[] = [];
+
+    const mapItemToRecord = (item: any, requestTypeOverride?: string) => {
+    const user = item.user || {};
+
+    console.log('API ITEM RECEIVED:', JSON.stringify(item, null, 2));
+    // VITAL DEBUGGING STEPS:
+    console.log('Original API item received:', JSON.stringify(item, null, 2)); // Log the whole item
+    console.log('Extracted item.user part:', JSON.stringify(item.user, null, 2)); // Log just the item.user part
+    console.log('Assigned user variable:', JSON.stringify(user, null, 2)); // Log the 'user' variable after 'item.user || {}'
+
+    const firstName = user.first_name || item.user_first_name || item.first_name || '';
+    const lastName = user.last_name || item.user_last_name || item.last_name || '';
+
+    let studentName = (firstName + ' ' + lastName).trim();
+    if (!studentName && (user.username || item.user_username)) {
+      studentName = user.username || item.user_username;
+    } else if (!studentName) { // This means studentName was empty after trying first/last and username
+      studentName = 'N/A';
+    }
+
+    // If you see "undefined" in the table, it might be that studentName became "undefined undefined"
+    // and then the if conditions were not met as "undefined undefined" is not falsy.
+    // Let's refine the studentName logic slightly for robustness:
+
+    let fName = user.first_name || item.user_first_name || item.first_name;
+    let lName = user.last_name || item.user_last_name || item.last_name;
+
+    if (fName && lName) {
+        studentName = `${fName} ${lName}`;
+    } else if (fName) {
+        studentName = fName;
+    } else if (lName) {
+        studentName = lName;
+    } else if (user.username) {
+        studentName = user.username;
+    } else if (item.user_username) {
+        studentName = item.user_username;
+    } else {
+        studentName = 'N/A'; // Default if no name components found
+    }
+
+
+    // Consolidate program logic
+    let program = item.programme || item.user_program || user.program || user.department || 'N/A'; // Added user.department as a common source
+    if (requestTypeOverride === 'provisional' && item.programme) {
+        program = item.programme;
+    }
+
+    return {
+      ...item, // Spread original item first
+      id: item.id,
+      request_type: requestTypeOverride || item.request_type,
+      student_name: studentName.trim(), // Ensure student_name is a string
+      program: program,
+      submitted_at: this.isValidDate(item.submitted_at) ? new Date(item.submitted_at) : new Date(0),
+      hod_verified: item.hod_verified,
+      bursar_verified: item.bursar_verified,
+      exam_officer_verified: item.exam_officer_approved,
+      user_id: user.id || item.user // Prioritize ID from nested object if present
+    };
+};
 
     if (this.role === 'hod' || this.role === 'exam_officer' || this.role === 'admin') {
       requestsToFetch.push(
         this.http.get<any[]>(this.apiEndpoints.transcriptCertificateRequests)
           .pipe(
-            map(data => data.map(item => ({
-              ...item,
-              id: item.id,
-              request_type: item.request_type,
-              student_name: item.user_username,
-              program: item.user_program,
-              submitted_at: new Date(item.submitted_at),
-              hod_verified: item.hod_verified,
-              bursar_verified: item.bursar_verified,
-              exam_officer_verified: item.exam_officer_approved,
-              user_id: item.user
-            }))),
+            map(data => data.map(item => mapItemToRecord(item))), // Use common mapper
             catchError(error => {
               console.error('Error fetching transcript/certificate requests:', error);
               return of([]);
@@ -101,18 +232,7 @@ export class VerifyRecordsComponent implements OnInit {
       requestsToFetch.push(
         this.http.get<any[]>(this.apiEndpoints.provisionalRequests)
           .pipe(
-            map(data => data.map(item => ({
-              ...item,
-              id: item.id,
-              request_type: 'provisional',
-              student_name: item.user_username,
-              program: item.programme,
-              submitted_at: new Date(item.submitted_at),
-              hod_verified: item.hod_verified,
-              bursar_verified: item.bursar_verified,
-              exam_officer_verified: item.exam_officer_approved,
-              user_id: item.user
-            }))),
+            map(data => data.map(item => mapItemToRecord(item, 'provisional'))), // Use common mapper, override type
             catchError(error => {
               console.error('Error fetching provisional requests:', error);
               return of([]);
@@ -121,15 +241,16 @@ export class VerifyRecordsComponent implements OnInit {
       );
     }
 
+    // Consolidate Bursar logic if API responses can be made similar
     if (requestsToFetch.length === 0 && (this.role === 'bursar')) {
-        requestsToFetch.push(
-          this.http.get<any[]>(this.apiEndpoints.transcriptCertificateRequests)
-            .pipe(map(data => data.map(item => ({ ...item, request_type: item.request_type, student_name: item.user_username, program: item.user_program, submitted_at: new Date(item.submitted_at), hod_verified: item.hod_verified, bursar_verified: item.bursar_verified, exam_officer_verified: item.exam_officer_approved, user_id: item.user }))), catchError(() => of([])))
-        );
-        requestsToFetch.push(
-          this.http.get<any[]>(this.apiEndpoints.provisionalRequests)
-            .pipe(map(data => data.map(item => ({ ...item, request_type: 'provisional', student_name: item.user_username, program: item.programme, submitted_at: new Date(item.submitted_at), hod_verified: item.hod_verified, bursar_verified: item.bursar_verified, exam_officer_verified: item.exam_officer_approved, user_id: item.user }))), catchError(() => of([])))
-        );
+      requestsToFetch.push(
+        this.http.get<any[]>(this.apiEndpoints.transcriptCertificateRequests)
+          .pipe(map(data => data.map(item => mapItemToRecord(item))), catchError(() => of([]))) // Use common mapper
+      );
+      requestsToFetch.push(
+        this.http.get<any[]>(this.apiEndpoints.provisionalRequests)
+          .pipe(map(data => data.map(item => mapItemToRecord(item, 'provisional'))), catchError(() => of([]))) // Use common mapper
+      );
     }
 
     forkJoin(requestsToFetch).subscribe({
@@ -137,13 +258,14 @@ export class VerifyRecordsComponent implements OnInit {
         allResponses.forEach(responseArray => {
           this.records.push(...responseArray);
         });
+        // Deduplicate records (if necessary, your existing logic)
         this.records = this.records.filter((record, index, self) =>
-            index === self.findIndex((r) => (
-              r.id === record.id && r.request_type === record.request_type
-            ))
+          index === self.findIndex((r) => (
+            r.id === record.id && r.request_type === record.request_type
+          ))
         );
         this.updateSummary();
-        this.calculateCertificatesRequestedPerYear();
+        this.calculateCertificatesRequestedPerYear(); // Make sure this is called after records are fully processed
         this.applyFilter();
       },
       error: (error) => {
@@ -181,7 +303,7 @@ export class VerifyRecordsComponent implements OnInit {
             return submitted.toDateString() === today.toDateString();
           case 'month':
             return submitted.getMonth() === today.getMonth() &&
-                   submitted.getFullYear() === today.getFullYear();
+              submitted.getFullYear() === today.getFullYear();
           case 'year':
             return submitted.getFullYear() === today.getFullYear();
           default:
@@ -212,26 +334,26 @@ export class VerifyRecordsComponent implements OnInit {
 
   selectRecord(selectedRequest: any) {
     this.record = {
-        ...selectedRequest,
-        studentDetails: {
-          name: selectedRequest.student_name,
-          program: selectedRequest.program,
-          request_type: selectedRequest.request_type,
-          submitted_at: selectedRequest.submitted_at
-        },
-        academicRecords: [],
-        financialRecords: { details: [], has_pending_dues: false, total_paid: 0, total_due: 0 },
-        certificates: [],
-        fullProfile: null
+      ...selectedRequest,
+      studentDetails: {
+        name: selectedRequest.student_name,
+        program: selectedRequest.program,
+        request_type: selectedRequest.request_type,
+        submitted_at: selectedRequest.submitted_at
+      },
+      academicRecords: [],
+      financialRecords: { details: [], has_pending_dues: false, total_paid: 0, total_due: 0 },
+      certificates: [],
+      fullProfile: null
     };
 
     const studentUserId = selectedRequest.user_id || selectedRequest.user;
 
     if (!studentUserId) {
-        console.error("Student User ID not found in the selected record.", selectedRequest);
-        alert("Cannot fetch details: Student User ID is missing.");
-        this.record = null;
-        return;
+      console.error("Student User ID not found in the selected record.", selectedRequest);
+      alert("Cannot fetch details: Student User ID is missing.");
+      this.record = null;
+      return;
     }
 
     const dataObservables: any = {};
@@ -316,25 +438,25 @@ export class VerifyRecordsComponent implements OnInit {
     }
 
     if (Object.keys(dataObservables).length === 0) {
-        return;
+      return;
     }
 
     forkJoin(dataObservables).subscribe((results: any) => {
-        if (results.profile) {
-          this.record.fullProfile = results.profile;
-          if (results.profile.registration_number) {
-            this.record.studentDetails.registration_number = results.profile.registration_number;
-          }
+      if (results.profile) {
+        this.record.fullProfile = results.profile;
+        if (results.profile.registration_number) {
+          this.record.studentDetails.registration_number = results.profile.registration_number;
         }
-        if (results.academic) {
-            this.record.academicRecords = results.academic;
-        }
-        if (results.financial) {
-            this.record.financialRecords = results.financial;
-        }
-        if (results.certificates) {
-            this.record.certificates = results.certificates;
-        }
+      }
+      if (results.academic) {
+        this.record.academicRecords = results.academic;
+      }
+      if (results.financial) {
+        this.record.financialRecords = results.financial;
+      }
+      if (results.certificates) {
+        this.record.certificates = results.certificates;
+      }
     });
   }
 
@@ -345,8 +467,8 @@ export class VerifyRecordsComponent implements OnInit {
     // The backend might provide a filename in 'name', so be mindful.
     // If 'name' is intended as the primary display name from backend, use it.
     const baseName = certificate.name && certificate.name.trim() !== '' && !certificate.name.includes('/') ? // Avoid path-like names
-                     certificate.name :
-                     certificate.certificate_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      certificate.name :
+      certificate.certificate_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     return baseName;
   }
   // ****** END OF NEW HELPER FUNCTION ******
@@ -401,8 +523,8 @@ export class VerifyRecordsComponent implements OnInit {
     } else if (verificationRole === 'exam_officer') {
       payload = { exam_officer_approved: true };
     } else {
-        console.error('Unknown verification role:', verificationRole);
-        return;
+      console.error('Unknown verification role:', verificationRole);
+      return;
     }
 
     this.http.patch(apiEndpoint, payload)
@@ -437,8 +559,8 @@ export class VerifyRecordsComponent implements OnInit {
 
   printCertificate() {
     if (!this.record) {
-        alert("No record selected.");
-        return;
+      alert("No record selected.");
+      return;
     }
 
     if (!this.record.exam_officer_verified) {
@@ -466,8 +588,8 @@ export class VerifyRecordsComponent implements OnInit {
 
   overrideVerification() {
     if (!this.record || !this.record.id) {
-        alert("No record selected for override.");
-        return;
+      alert("No record selected for override.");
+      return;
     }
 
     let apiEndpoint = '';
@@ -546,7 +668,7 @@ export class VerifyRecordsComponent implements OnInit {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `student_requests_report_${this.filterOption}_${new Date().toISOString().slice(0,10)}.csv`);
+    link.setAttribute("download", `student_requests_report_${this.filterOption}_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -556,5 +678,5 @@ export class VerifyRecordsComponent implements OnInit {
   isRequestComplete(record: any): boolean {
     return record.hod_verified && record.bursar_verified && record.exam_officer_verified;
   }
-  
+
 }

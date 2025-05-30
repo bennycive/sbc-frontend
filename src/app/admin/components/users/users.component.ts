@@ -204,5 +204,8 @@ export class UsersComponent {
     });
     doc.save('user_report.pdf');
   }
-  
+
+
 }
+
+

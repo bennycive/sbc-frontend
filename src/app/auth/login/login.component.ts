@@ -21,7 +21,7 @@ import { environment } from '../../../environments/environment';
 export class LoginComponent {
 
 
-  currentUserRole: '' | 'student' | 'hod' | 'bursar' | 'admin' = '';
+  currentUserRole: '' | 'student' | 'exam-officer' | 'hod' | 'bursar' | 'admin' = '';
 
   loginForm: FormGroup;
   loginError: string | null = null;

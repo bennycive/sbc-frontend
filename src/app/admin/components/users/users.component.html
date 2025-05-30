@@ -123,7 +123,7 @@
             <th>Email</th>
             <th>Role</th>
             <th>Department</th>
-            <th>Phone</th>
+            <!-- <th>Phone</th> -->
             <th>Actions</th>
           </tr>
         </thead>
@@ -135,7 +135,7 @@
             <td>{{ user.email }}</td>
             <td>{{ user.role | titlecase }}</td>
             <td>{{ user.department }}</td>
-            <td>{{ user.phone }}</td>
+            <!-- <td>{{ user.phone }}</td> -->
             <td>
               <button class="btn btn-sm btn-primary me-1" (click)="onEdit(i)">Edit</button>
               <button class="btn btn-sm btn-danger" (click)="onDelete(i)">Delete</button>
