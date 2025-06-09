@@ -73,15 +73,15 @@
         <input type="text" class="form-control" placeholder="Enter Course Name" [(ngModel)]="courseName">
         <select class="form-select" [(ngModel)]="semester">
           <option value="" disabled selected>Select Semester</option>
-          <option value="Semester 1">Semester 1</option>
-          <option value="Semester 2">Semester 2</option>
+          <option value="1">Semester 1</option>
+          <option value="2">Semester 2</option>
         </select>
         <select class="form-select" [(ngModel)]="classLevel">
           <option value="" disabled selected>Select Class Level</option>
-          <option value="First Year">First Year</option>
-          <option value="Second Year">Second Year</option>
-          <option value="Third Year">Third Year</option>
-          <option value="Fourth Year">Fourth Year</option>
+          <option value="1">First Year</option>
+          <option value="2">Second Year</option>
+          <option value="3">Third Year</option>
+          <option value="4">Fourth Year</option>
         </select>
         <button class="btn btn-info" (click)="addCourse()">Add Course</button>
       </div>
@@ -100,8 +100,8 @@
           <tr *ngFor="let course of colleges[selectedCollegeIndex].departments[selectedDepartmentIndex].courses; let k = index">
             <td>{{ k + 1 }}</td>
             <td>{{ course.name }}</td>
-            <td>{{ course.semester }}</td>
-            <td>{{ course.classLevel }}</td>
+            <td>{{ course.semester === '1' ? 'Semester 1' : 'Semester 2' }}</td>
+            <td>{{ course.class_level === '1' ? 'First Year' : course.class_level === '2' ? 'Second Year' : course.class_level === '3' ? 'Third Year' : 'Fourth Year' }}</td>
             <td>
               <button class="btn btn-sm btn-warning me-2" (click)="updateCourse(k)">Update</button>
               <button class="btn btn-sm btn-danger" (click)="deleteCourse(k)">Delete</button>

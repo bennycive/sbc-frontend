@@ -25,4 +25,3 @@ export class CourseService {
     return this.http.delete(`${this.baseUrl}${id}/`);
   }
 }
-
