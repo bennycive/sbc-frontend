@@ -7,6 +7,7 @@ import { HttpClient, HttpClientModule }from '@angular/common/http';
 import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { Chart, registerables, ChartConfiguration } from 'chart.js/auto'; // Import ChartConfiguration
+import { PreloaderComponent } from '../components/preloader/preloader.component';
 
 // --- Interfaces ---
 interface CustomUser {
@@ -64,7 +65,7 @@ interface TableRow {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule],
+  imports: [CommonModule, FormsModule, HttpClientModule, PreloaderComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
   providers: [DatePipe]
@@ -79,6 +80,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   formattedDate: string = '';
   user: CustomUser | null = null;
   private subscriptions: Subscription = new Subscription();
+
+  loading: boolean = false; // For preloader
 
   // Dynamic Data Properties
   studentSummaryCards: SummaryCard[] = [];
@@ -100,7 +103,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     hodPendingRequests: `${this.API_BASE_URL}users/transcript-certificate-requests/`,
     bursarSummary: `${this.API_BASE_URL}dashboard/bursar/summary/`,
     bursarVerifiedFinancials: `${this.API_BASE_URL}dashboard/bursar/financials/`,
-    adminSummary: `${this.API_BASE_URL}dashboard/admin/summary/`,
+    adminSummary: `${this.API_BASE_URL}users/dashboard/admin/summary/`,
     requestTrendsChart: `${this.API_BASE_URL}dashboard/chart/request-trends/`
   };
 
@@ -142,6 +145,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   loadDashboardData(): void {
     if (!this.user || !this.user.id) return;
 
+    this.loading = true; // Show preloader
+
     switch (this.currentUserRole) {
       case 'student':
         this.fetchStudentDashboardData(this.user.id);
@@ -157,6 +162,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         break;
       default:
         console.warn("Unknown user role or no role defined for dashboard:", this.currentUserRole);
+        this.loading = false; // Hide preloader if unknown role
     }
   }
 
@@ -212,6 +218,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
           { title: 'Certificates Ready', value: data.readyCount, icon: 'bi bi-file-earmark-check', colorClass: 'text-primary' },
           { title: 'Biometric Status', value: biometricStatus, icon: 'bi bi-fingerprint', colorClass: 'text-primary' }
         ];
+        this.loading = false; // Hide preloader
       });
     this.subscriptions.add(requestsSub);
   }
@@ -225,6 +232,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
           { title: 'Departments Overseen', value: summary.departments || 0, icon: 'bi bi-building', colorClass: 'text-success' },
           { title: 'Total Students in Depts', value: summary.students || 0, icon: 'bi bi-people', colorClass: 'text-success' }
         ];
+        this.loading = false; // Hide preloader
       });
     this.subscriptions.add(summarySub);
 
@@ -269,6 +277,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
           { title: 'Verified by Me', value: summary.completed_by_bursar || 0, icon: 'bi bi-check-circle', colorClass: 'text-primary' },
           { title: 'Rejected by Me', value: summary.rejected_by_bursar || 0, icon: 'bi bi-x-circle', colorClass: 'text-primary' }
         ];
+        this.loading = false; // Hide preloader
       });
     this.subscriptions.add(summarySub);
 
@@ -290,8 +299,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
             };
         })),
         catchError((err) => {
-            console.error("Error fetching bursar financials:", err);
-            return of([]);
+          console.error("Error fetching bursar financials:", err);
+          return of([]);
         })
       )
       .subscribe(data => {
@@ -319,6 +328,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
           { title: 'Total Completed Requests', value: summary.total_completed || 0, icon: 'bi bi-patch-check', colorClass: 'text-primary' },
           { title: 'Total Rejected', value: summary.total_rejected || 0, icon: 'bi bi-x-octagon', colorClass: 'text-primary' }
         ];
+        this.loading = false; // Hide preloader
       });
     this.subscriptions.add(adminSummarySub);
     if (this.requestChartCanvas?.nativeElement) this.renderChart();

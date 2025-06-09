@@ -1,29 +1,34 @@
 <div class="container-fluid p-4">
 
-  <div class="admin-header d-flex justify-content-between align-items-center px-4 py-2 bg-white border-bottom mb-5">
-    <div class="d-flex align-items-center">
-      <span class="fw-semibold">
-        Logged in as:
-        <span class="text-primary" *ngIf="user">{{ user.first_name }} {{ user.last_name }}</span>
-        <span class="text-primary" *ngIf="!user">Loading user...</span>
-      </span>
-    </div>
-    <div class="text-end">
-      <div class="small text-muted" [innerHTML]="formattedDate"></div>
-    </div>
+  <div *ngIf="loading" class="preloader-container">
+    <app-preloader></app-preloader>
   </div>
 
-  <div *ngIf="currentUserRole === 'student'">
-    <div class="row g-4 mb-4">
-      <div class="col-md-4" *ngFor="let card of studentSummaryCards">
-        <div class="card summary-card h-100 shadow-sm">
-          <div class="card-body">
-            <h5><i [class]="card.icon + ' me-2 ' + (card.colorClass || 'text-primary')"></i>{{ card.title }}</h5>
-            <p class="fs-5 fw-semibold">{{ card.value }}</p>
+  <div *ngIf="!loading">
+    <div class="admin-header d-flex justify-content-between align-items-center px-4 py-2 bg-white border-bottom mb-5">
+      <div class="d-flex align-items-center">
+        <span class="fw-semibold">
+          Logged in as:
+          <span class="text-primary" *ngIf="user">{{ user.first_name }} {{ user.last_name }}</span>
+          <span class="text-primary" *ngIf="!user">Loading user...</span>
+        </span>
+      </div>
+      <div class="text-end">
+        <div class="small text-muted" [innerHTML]="formattedDate"></div>
+      </div>
+    </div>
+
+    <div *ngIf="currentUserRole === 'student'">
+      <div class="row g-4 mb-4">
+        <div class="col-md-4" *ngFor="let card of studentSummaryCards">
+          <div class="card summary-card h-100 shadow-sm">
+            <div class="card-body">
+              <h5><i [class]="card.icon + ' me-2 ' + (card.colorClass || 'text-primary')"></i>{{ card.title }}</h5>
+              <p class="fs-5 fw-semibold">{{ card.value }}</p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </div>
 
   <div *ngIf="currentUserRole === 'hod'">
