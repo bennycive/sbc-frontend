@@ -4,7 +4,7 @@
     <div class="d-flex align-items-center">
       <span class="fw-semibold">
         Logged in as:
-        <span class="text-primary" *ngIf="user">{{ user?.first_name }} {{ user?.last_name }}</span>
+        <span class="text-primary" *ngIf="user">{{ user.first_name }} {{ user.last_name }}</span>
         <span class="text-primary" *ngIf="!user">Loading user...</span>
       </span>
     </div>

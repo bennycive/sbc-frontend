@@ -32,6 +32,15 @@ export class CertificateAndIdsListComponent implements OnInit {
   mode: 'add' | 'view' | 'edit' | null = null;
   isPanelOpen = false;
 
+  certificateTypes = [
+    { value: 'birth_certificate', label: 'Birth Certificate' },
+    { value: 'form_4_certificate', label: 'Form 4 Certificate' },
+    { value: 'form_6_certificate', label: 'Form 6 Certificate' },
+    { value: 'diploma_certificate', label: 'Diploma Certificate' },
+    { value: 'voter_id', label: 'Voter ID' },
+    { value: 'nin_id', label: 'NIN ID' }
+  ];
+
   addCertificateForm!: FormGroup;
   editCertificateForm!: FormGroup;
 
@@ -64,7 +73,10 @@ export class CertificateAndIdsListComponent implements OnInit {
 
   loadStudents() {
     this.http.get<Student[]>(`${this.apiUrl}/users/`).subscribe({
-      next: (res) => (this.students = res),
+      next: (res) => {
+        // Filter users to only those with role 'student'
+        this.students = res.filter((user: any) => user.role === 'student');
+      },
       error: () => Swal.fire('Error', 'Failed to load students', 'error')
     });
   }
@@ -99,6 +111,23 @@ export class CertificateAndIdsListComponent implements OnInit {
     });
     this.editPreviewUrl = cert.certificate_file_url || null;
     this.isPanelOpen = true;
+  }
+
+  handleEditFile(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file) {
+      this.editCertificateForm.patchValue({ certificate_file: file });
+      const reader = new FileReader();
+      reader.onload = () => (this.editPreviewUrl = reader.result);
+      reader.readAsDataURL(file);
+    } else {
+      // If no file selected, reset preview to existing file URL
+      if (this.selectedCertificate) {
+        this.editPreviewUrl = this.selectedCertificate.certificate_file_url || null;
+      } else {
+        this.editPreviewUrl = null;
+      }
+    }
   }
 
   closePanel() {

@@ -82,7 +82,10 @@
 
         <div class="mb-3">
           <label for="certificateTypeAdd" class="form-label">Certificate Type</label>
-          <input id="certificateTypeAdd" type="text" class="form-control" formControlName="certificate_type" [class.is-invalid]="addCertificateForm.get('certificate_type')?.invalid && addCertificateForm.get('certificate_type')?.touched" />
+          <select id="certificateTypeAdd" class="form-select" formControlName="certificate_type" [class.is-invalid]="addCertificateForm.get('certificate_type')?.invalid && addCertificateForm.get('certificate_type')?.touched" required>
+            <option value="" disabled selected>Select Certificate Type</option>
+            <option *ngFor="let type of certificateTypes" [value]="type.value">{{ type.label }}</option>
+          </select>
           <div *ngIf="addCertificateForm.get('certificate_type')?.invalid && addCertificateForm.get('certificate_type')?.touched" class="invalid-feedback">
             Certificate type is required
           </div>

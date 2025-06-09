@@ -64,7 +64,7 @@ interface TableRow {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule, DatePipe],
+  imports: [CommonModule, FormsModule, HttpClientModule],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
   providers: [DatePipe]
