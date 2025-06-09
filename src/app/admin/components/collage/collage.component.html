@@ -1,114 +1,119 @@
 <div class="container mt-4">
-  <h3>College Management</h3>
-
-  <!-- Add College -->
-  <div class="input-group mb-3">
-    <input type="text" class="form-control" placeholder="Enter College Name" [(ngModel)]="collegeName">
-    <button class="btn btn-primary" (click)="addCollege()">Add College</button>
+  <div *ngIf="loading" class="preloader-container">
+    <app-preloader></app-preloader>
   </div>
+  <div *ngIf="!loading">
+    <h3>College Management</h3>
 
-  <!-- College Table -->
-  <table class="table table-bordered table-striped">
-    <thead class="table-dark">
-      <tr>
-        <th>#</th>
-        <th>College Name</th>
-        <th>Departments</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let college of colleges; let i = index">
-        <td>{{ i + 1 }}</td>
-        <td>{{ college.name }}</td>
-        <td>{{ college.departments.length }}</td>
-        <td>
-          <button class="btn btn-sm btn-outline-secondary me-2" (click)="selectCollege(i)">Manage</button>
-          <button class="btn btn-sm btn-warning me-2" (click)="updateCollege(i)">Update</button>
-          <button class="btn btn-sm btn-danger" (click)="deleteCollege(i)">Delete</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-
-  <!-- Department Section -->
-  <div *ngIf="selectedCollegeIndex !== null" class="mt-5">
-    <h5>Departments in {{ colleges[selectedCollegeIndex].name }}</h5>
-
-    <!-- Add Department -->
+    <!-- Add College -->
     <div class="input-group mb-3">
-      <input type="text" class="form-control" placeholder="Enter Department Name" [(ngModel)]="departmentName">
-      <button class="btn btn-success" (click)="addDepartment()">Add Department</button>
+      <input type="text" class="form-control" placeholder="Enter College Name" [(ngModel)]="collegeName">
+      <button class="btn btn-primary" (click)="addCollege()">Add College</button>
     </div>
 
-    <table class="table table-bordered">
-      <thead class="table-light">
+    <!-- College Table -->
+    <table class="table table-bordered table-striped">
+      <thead class="table-dark">
         <tr>
           <th>#</th>
-          <th>Department Name</th>
-          <th>Courses</th>
+          <th>College Name</th>
+          <th>Departments</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let dept of colleges[selectedCollegeIndex].departments; let j = index">
-          <td>{{ j + 1 }}</td>
-          <td>{{ dept.name }}</td>
-          <td>{{ dept.courses.length }}</td>
+        <tr *ngFor="let college of colleges; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ college.name }}</td>
+          <td>{{ college.departments.length }}</td>
           <td>
-            <button class="btn btn-sm btn-outline-secondary me-2" (click)="selectDepartment(j)">Manage Courses</button>
-            <button class="btn btn-sm btn-warning me-2" (click)="updateDepartment(j)">Update</button>
-            <button class="btn btn-sm btn-danger" (click)="deleteDepartment(j)">Delete</button>
+            <button class="btn btn-sm btn-outline-secondary me-2" (click)="selectCollege(i)">Manage</button>
+            <button class="btn btn-sm btn-warning me-2" (click)="updateCollege(i)">Update</button>
+            <button class="btn btn-sm btn-danger" (click)="deleteCollege(i)">Delete</button>
           </td>
         </tr>
       </tbody>
     </table>
 
-    <!-- Course Section -->
-    <div *ngIf="selectedDepartmentIndex !== null" class="mt-4">
-      <h5>Courses in {{ colleges[selectedCollegeIndex].departments[selectedDepartmentIndex].name }}</h5>
+    <!-- Department Section -->
+    <div *ngIf="selectedCollegeIndex !== null" class="mt-5">
+      <h5>Departments in {{ colleges[selectedCollegeIndex].name }}</h5>
 
-      <!-- Add Course -->
+      <!-- Add Department -->
       <div class="input-group mb-3">
-        <input type="text" class="form-control" placeholder="Enter Course Name" [(ngModel)]="courseName">
-        <select class="form-select" [(ngModel)]="semester">
-          <option value="" disabled selected>Select Semester</option>
-          <option value="1">Semester 1</option>
-          <option value="2">Semester 2</option>
-        </select>
-        <select class="form-select" [(ngModel)]="classLevel">
-          <option value="" disabled selected>Select Class Level</option>
-          <option value="1">First Year</option>
-          <option value="2">Second Year</option>
-          <option value="3">Third Year</option>
-          <option value="4">Fourth Year</option>
-        </select>
-        <button class="btn btn-info" (click)="addCourse()">Add Course</button>
+        <input type="text" class="form-control" placeholder="Enter Department Name" [(ngModel)]="departmentName">
+        <button class="btn btn-success" (click)="addDepartment()">Add Department</button>
       </div>
 
-      <table class="table table-sm table-striped table-hover">
-        <thead>
+      <table class="table table-bordered">
+        <thead class="table-light">
           <tr>
             <th>#</th>
-            <th>Course Name</th>
-            <th>Semester</th>
-            <th>Class Level</th>
+            <th>Department Name</th>
+            <th>Courses</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let course of colleges[selectedCollegeIndex].departments[selectedDepartmentIndex].courses; let k = index">
-            <td>{{ k + 1 }}</td>
-            <td>{{ course.name }}</td>
-            <td>{{ course.semester === '1' ? 'Semester 1' : 'Semester 2' }}</td>
-            <td>{{ course.class_level === '1' ? 'First Year' : course.class_level === '2' ? 'Second Year' : course.class_level === '3' ? 'Third Year' : 'Fourth Year' }}</td>
+          <tr *ngFor="let dept of colleges[selectedCollegeIndex].departments; let j = index">
+            <td>{{ j + 1 }}</td>
+            <td>{{ dept.name }}</td>
+            <td>{{ dept.courses.length }}</td>
             <td>
-              <button class="btn btn-sm btn-warning me-2" (click)="updateCourse(k)">Update</button>
-              <button class="btn btn-sm btn-danger" (click)="deleteCourse(k)">Delete</button>
+              <button class="btn btn-sm btn-outline-secondary me-2" (click)="selectDepartment(j)">Manage Courses</button>
+              <button class="btn btn-sm btn-warning me-2" (click)="updateDepartment(j)">Update</button>
+              <button class="btn btn-sm btn-danger" (click)="deleteDepartment(j)">Delete</button>
             </td>
           </tr>
         </tbody>
       </table>
+
+      <!-- Course Section -->
+      <div *ngIf="selectedDepartmentIndex !== null" class="mt-4">
+        <h5>Courses in {{ colleges[selectedCollegeIndex].departments[selectedDepartmentIndex].name }}</h5>
+
+        <!-- Add Course -->
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" placeholder="Enter Course Name" [(ngModel)]="courseName">
+          <select class="form-select" [(ngModel)]="semester">
+            <option value="" disabled selected>Select Semester</option>
+            <option value="1">Semester 1</option>
+            <option value="2">Semester 2</option>
+          </select>
+          <select class="form-select" [(ngModel)]="classLevel">
+            <option value="" disabled selected>Select Class Level</option>
+            <option value="1">First Year</option>
+            <option value="2">Second Year</option>
+            <option value="3">Third Year</option>
+            <option value="4">Fourth Year</option>
+          </select>
+          <button class="btn btn-info" (click)="addCourse()">Add Course</button>
+        </div>
+
+        <table class="table table-sm table-striped table-hover">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Course Name</th>
+              <th>Semester</th>
+              <th>Class Level</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let course of colleges[selectedCollegeIndex].departments[selectedDepartmentIndex].courses; let k = index">
+              <td>{{ k + 1 }}</td>
+              <td>{{ course.name }}</td>
+              <td>{{ course.semester === '1' ? 'Semester 1' : 'Semester 2' }}</td>
+              <td>{{ course.class_level === '1' ? 'First Year' : course.class_level === '2' ? 'Second Year' : course.class_level === '3' ? 'Third Year' : 'Fourth Year' }}</td>
+              <td>
+                <button class="btn btn-sm btn-warning me-2" (click)="updateCourse(k)">Update</button>
+                <button class="btn btn-sm btn-danger" (click)="deleteCourse(k)">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>

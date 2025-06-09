@@ -7,6 +7,7 @@ import Swal from 'sweetalert2';
 import { DepartmentService } from '../../../services/department.service';
 import { CourseService } from '../../../services/course.service';
 import { CollegeService } from '../../../services/college.service';
+import { PreloaderComponent } from "../preloader/preloader.component";
 
 interface Course {
   id?: number;
@@ -32,7 +33,7 @@ interface College {
 @Component({
   selector: 'app-collage',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PreloaderComponent],
   templateUrl: './collage.component.html',
   styleUrls: ['./collage.component.css']
 })
@@ -43,6 +44,8 @@ export class CollageComponent implements OnInit {
   courseName = '';
   semester = '';
   classLevel = '';
+
+  loading: boolean = false;
 
   selectedCollegeIndex: number | null = null;
   selectedDepartmentIndex: number | null = null;
@@ -58,11 +61,16 @@ export class CollageComponent implements OnInit {
   }
 
   loadColleges() {
+    this.loading = true;
     this.collegeService.getColleges().subscribe({
-      next: (data) => this.colleges = data,
+      next: (data) => {
+        this.colleges = data;
+        this.loading = false;
+      },
       error: (error) => {
         console.error('Error loading colleges:', error);
         Swal.fire('Error', 'Failed to load colleges', 'error');
+        this.loading = false;
       }
     });
   }

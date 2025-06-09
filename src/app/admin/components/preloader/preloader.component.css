@@ -1,19 +1,31 @@
-.preloader {
+.preloader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(2, 37, 72, 0.6); /* sidebar color with opacity */
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100px;
-  width: 100px;
-  margin: auto;
+  z-index: 1050; /* above most elements */
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.preloader-overlay.fade-out {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .spinner {
   border: 8px solid #f3f3f3;
   border-top: 8px solid #022548; /* sidebar color */
   border-radius: 50%;
-  width: 60px;
-  height: 60px;
+  width: 80px;
+  height: 80px;
   animation: spin 1s linear infinite;
+  box-shadow: 0 0 15px #022548;
 }
 
 @keyframes spin {
