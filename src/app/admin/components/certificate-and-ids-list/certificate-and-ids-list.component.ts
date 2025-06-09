@@ -71,6 +71,12 @@ export class CertificateAndIdsListComponent implements OnInit {
     });
   }
 
+  isImageFile(url: string): boolean {
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
+    const lowerUrl = url.toLowerCase();
+    return imageExtensions.some(ext => lowerUrl.endsWith(ext));
+  }
+
   loadStudents() {
     this.http.get<Student[]>(`${this.apiUrl}/users/`).subscribe({
       next: (res) => {
@@ -113,22 +119,7 @@ export class CertificateAndIdsListComponent implements OnInit {
     this.isPanelOpen = true;
   }
 
-  handleEditFile(event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (file) {
-      this.editCertificateForm.patchValue({ certificate_file: file });
-      const reader = new FileReader();
-      reader.onload = () => (this.editPreviewUrl = reader.result);
-      reader.readAsDataURL(file);
-    } else {
-      // If no file selected, reset preview to existing file URL
-      if (this.selectedCertificate) {
-        this.editPreviewUrl = this.selectedCertificate.certificate_file_url || null;
-      } else {
-        this.editPreviewUrl = null;
-      }
-    }
-  }
+  // Removed duplicate handleEditFile method to fix duplicate function implementation error
 
   closePanel() {
     this.isPanelOpen = false;
@@ -174,7 +165,8 @@ export class CertificateAndIdsListComponent implements OnInit {
 
     this.http.post<Certificate>(`${this.apiUrl}/certificates/`, formData).subscribe({
       next: (res) => {
-        this.certificates.push(res);
+        // Reload certificates to get updated file URLs
+        this.loadCertificates();
         this.closePanel();
         Swal.fire('Success', 'Certificate added successfully', 'success');
         this.uploading = false;
@@ -206,8 +198,8 @@ export class CertificateAndIdsListComponent implements OnInit {
 
     this.http.put<Certificate>(`${this.apiUrl}/certificates/${this.selectedCertificate.id}/`, formData).subscribe({
       next: (updatedCert) => {
-        const index = this.certificates.findIndex(c => c.id === updatedCert.id);
-        if (index > -1) this.certificates[index] = updatedCert;
+        // Reload certificates to get updated file URLs
+        this.loadCertificates();
         this.closePanel();
         Swal.fire('Success', 'Certificate updated successfully', 'success');
         this.uploading = false;
@@ -239,6 +231,7 @@ export class CertificateAndIdsListComponent implements OnInit {
         });
       }
     });
+
   }
 
   getStudentName(id: number) {

@@ -19,7 +19,8 @@
               <th>Type</th>
               <th>Name</th>
               <th>Uploaded</th>
-              <th>Preview</th>
+              <!-- Removed Preview header as requested -->
+              <!--<th>Preview</th>-->
               <th>Action</th>
             </tr>
           </thead>
@@ -30,15 +31,17 @@
               <td>{{ cert.certificate_type }}</td>
               <td>{{ cert.certificate_name }}</td>
               <td>{{ cert.uploaded_at | date: 'medium' }}</td>
-              <td>
+              <!-- Removed preview column as requested -->
+              <!--<td>
                 <img *ngIf="cert.certificate_file_url" [src]="cert.certificate_file_url"
                      alt="Certificate" class="img-thumbnail" style="max-width: 60px; max-height: 60px;" />
                 <span *ngIf="!cert.certificate_file_url">-</span>
-              </td>
+              </td>-->
               <td>
-                <button class="btn btn-info btn-sm me-1" (click)="openViewPanel(cert)" title="View">
+                <!-- Removed view button as requested -->
+                <!--<button class="btn btn-info btn-sm me-1" (click)="openViewPanel(cert)" title="View">
                   <i class="bi bi-eye"></i>
-                </button>
+                </button>-->
                 <button class="btn btn-primary btn-sm me-1" (click)="openEditPanel(cert)" title="Edit">
                   <i class="bi bi-pencil-square"></i>
                 </button>
@@ -165,26 +168,35 @@
       </form>
     </div>
 
-    <div class="panel-body p-3" *ngIf="mode === 'view' && selectedCertificate">
-      <dl class="row">
-        <dt class="col-sm-3">Student</dt>
-        <dd class="col-sm-9">{{ getStudentName(selectedCertificate.student) }}</dd>
+        <div class="panel-body p-3" *ngIf="mode === 'view' && selectedCertificate">
+          <dl class="row">
+            <dt class="col-sm-3">Student</dt>
+            <dd class="col-sm-9">{{ getStudentName(selectedCertificate.student) }}</dd>
 
-        <dt class="col-sm-3">Certificate Type</dt>
-        <dd class="col-sm-9">{{ selectedCertificate.certificate_type }}</dd>
+            <dt class="col-sm-3">Certificate Type</dt>
+            <dd class="col-sm-9">{{ selectedCertificate.certificate_type }}</dd>
 
-        <dt class="col-sm-3">Certificate Name</dt>
-        <dd class="col-sm-9">{{ selectedCertificate.certificate_name }}</dd>
+            <dt class="col-sm-3">Certificate Name</dt>
+            <dd class="col-sm-9">{{ selectedCertificate.certificate_name }}</dd>
 
-        <dt class="col-sm-3">Uploaded At</dt>
-        <dd class="col-sm-9">{{ selectedCertificate.uploaded_at | date: 'medium' }}</dd>
+            <dt class="col-sm-3">Uploaded At</dt>
+            <dd class="col-sm-9">{{ selectedCertificate.uploaded_at | date: 'medium' }}</dd>
 
-        <dt class="col-sm-3">Certificate File</dt>
-        <dd class="col-sm-9">
-          <img *ngIf="selectedCertificate.certificate_file_url" [src]="selectedCertificate.certificate_file_url" alt="Certificate" class="img-fluid" style="max-width: 300px;" />
-          <span *ngIf="!selectedCertificate.certificate_file_url">No file available</span>
-        </dd>
-      </dl>
-    </div>
+            <dt class="col-sm-3">Certificate File</dt>
+            <dd class="col-sm-9">
+              <ng-container *ngIf="selectedCertificate.certificate_file_url; else noFile">
+                <ng-container *ngIf="isImageFile(selectedCertificate.certificate_file_url); else fileLink">
+                  <img [src]="selectedCertificate.certificate_file_url" alt="Certificate" class="img-fluid" style="max-width: 300px;" />
+                </ng-container>
+                <ng-template #fileLink>
+                  <a [href]="selectedCertificate.certificate_file_url" target="_blank" rel="noopener noreferrer">Open File</a>
+                </ng-template>
+              </ng-container>
+              <ng-template #noFile>
+                <span>No file available</span>
+              </ng-template>
+            </dd>
+          </dl>
+        </div>
   </div>
 </div>
