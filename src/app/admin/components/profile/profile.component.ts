@@ -150,6 +150,10 @@ export class ProfileComponent implements OnInit {
         });
         this.isReadonly = true;
         this.disabled = true;
+        // Re-fetch profile to update UI
+        this.fetchProfile(this.profile.user, token);
+        // Re-fetch profile to update UI
+        this.fetchProfile(this.profile.user, token);
       },
       error: (err) => {
         console.error('Save failed', err);
@@ -159,7 +163,35 @@ export class ProfileComponent implements OnInit {
   }
 
   onFileSelected(event: any): void {
-    this.selectedFile = event.target.files[0];
+    const file: File = event.target.files[0];
+    if (!file) {
+      this.selectedFile = null;
+      return;
+    }
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      Swal.fire('Invalid File', 'Only JPG, PNG, or GIF files are allowed.', 'error');
+      this.selectedFile = null;
+      return;
+    }
+    // Validate file size (max 800KB)
+    const maxSize = 800 * 1024;
+    if (file.size > maxSize) {
+      Swal.fire('File Too Large', 'Maximum file size is 800KB.', 'error');
+      this.selectedFile = null;
+      return;
+    }
+    this.selectedFile = file;
   }
-  
+
+  // Helper to get department name by id
+  getDepartmentName(deptId: any): string {
+    const dept = this.departments.find(d => d.id === deptId);
+    return dept ? dept.name : '';
+  }
+
+  get programName(): string {
+    return this.profile.program ? this.courses.find(c => c.id == this.profile.program)?.name || '' : '';
+  }
 }
