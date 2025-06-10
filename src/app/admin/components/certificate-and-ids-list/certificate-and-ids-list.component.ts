@@ -93,6 +93,7 @@ export class CertificateAndIdsListComponent implements OnInit {
         this.loading = false;
       }
     });
+
   }
 
   loadCertificates() {

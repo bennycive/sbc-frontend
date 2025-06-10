@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit, OnDestroy, Output, EventEmitter, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../auth/auth.service'; // Adjust path as needed
 import { HttpClient, HttpClientModule }from '@angular/common/http';
@@ -8,6 +8,9 @@ import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { Chart, registerables, ChartConfiguration } from 'chart.js/auto'; // Import ChartConfiguration
 import { PreloaderComponent } from '../components/preloader/preloader.component';
+import { DepartmentService } from '../../services/department.service';
+import { CourseService } from '../../services/course.service';
+import Swal from 'sweetalert2';
 
 // --- Interfaces ---
 interface CustomUser {
@@ -18,6 +21,7 @@ interface CustomUser {
   email: string;
   role: 'student' | 'hod' | 'bursar' | 'admin' | '';
   department?: string; // Program name or department user belongs to
+  program?: string; // Added program field
   biometric_setup_complete?: boolean; // Example field for biometric status
   profile?: { // Example if biometric info is in profile
     nida?: string;
@@ -223,6 +227,30 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.subscriptions.add(requestsSub);
   }
 
+  saveStudentProfile(form: NgForm): void {
+    if (!this.user) return;
+
+    const updatedData = {
+      department: form.value.department,
+      program: form.value.program
+    };
+
+    this.http.put(`${this.apiEndpoints.users}${this.user.id}/`, updatedData).subscribe({
+      next: () => {
+        Swal.fire('Success', 'Profile updated successfully', 'success');
+        // Optionally update local user data
+        if (this.user) {
+          this.user.department = updatedData.department;
+          this.user.program = updatedData.program;
+        }
+      },
+      error: (err) => {
+        console.error('Error updating profile:', err);
+        Swal.fire('Error', 'Failed to update profile', 'error');
+      }
+    });
+  }
+
   fetchHodDashboardData(): void {
     const summarySub = this.http.get<any>(this.apiEndpoints.hodSummary)
       .pipe(catchError(() => of({ classes: 0, departments: 0, students: 0 })))
@@ -382,7 +410,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   onFilterByChange(): void {
     if (this.currentUserRole && !['student'].includes(this.currentUserRole)) {
-        this.renderChart();
+      this.renderChart();
     }
   }
 }

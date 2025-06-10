@@ -21,15 +21,19 @@
           <!-- Common or role-specific logic -->
           <div class="col-md-4" *ngIf="currentUserRole !== 'admin'">
             <label class="form-label">Department</label>
-            <input class="form-control" [(ngModel)]="profile.department" name="department" type="text"
-              placeholder="Department ID" [readonly]="isReadonly">
+            <select class="form-select" [(ngModel)]="profile.department" name="department" [disabled]="isReadonly">
+              <option value="" disabled>Select Department</option>
+              <option *ngFor="let dept of departments" [value]="dept.id">{{ dept.name }}</option>
+            </select>
           </div>
 
           <!-- Only for students -->
           <div class="col-md-6" *ngIf="currentUserRole === 'student'">
             <label class="form-label">Program</label>
-            <input class="form-control" [(ngModel)]="profile.program" name="program" type="text"
-              placeholder="Program" [readonly]="isReadonly">
+            <select class="form-select" [(ngModel)]="profile.program" name="program" [disabled]="isReadonly">
+              <option value="" disabled>Select Program</option>
+              <option *ngFor="let course of courses" [value]="course.id">{{ course.name }}</option>
+            </select>
           </div>
 
           <!-- Common field -->
