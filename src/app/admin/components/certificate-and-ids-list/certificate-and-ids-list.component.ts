@@ -18,10 +18,12 @@ interface Certificate {
   uploaded_at?: string;
 }
 
+import { PreloaderComponent } from '../preloader/preloader.component';
+
 @Component({
   selector: 'app-certificate-and-ids-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, PreloaderComponent],
   templateUrl: './certificate-and-ids-list.component.html',
   styleUrls: ['./certificate-and-ids-list.component.css']
 })
@@ -31,6 +33,8 @@ export class CertificateAndIdsListComponent implements OnInit {
   selectedCertificate: Certificate | null = null;
   mode: 'add' | 'view' | 'edit' | null = null;
   isPanelOpen = false;
+
+  loading: boolean = false;
 
   certificateTypes = [
     { value: 'birth_certificate', label: 'Birth Certificate' },
@@ -78,19 +82,30 @@ export class CertificateAndIdsListComponent implements OnInit {
   }
 
   loadStudents() {
+    this.loading = true;
     this.http.get<Student[]>(`${this.apiUrl}/users/`).subscribe({
       next: (res) => {
-        // Filter users to only those with role 'student'
         this.students = res.filter((user: any) => user.role === 'student');
+        this.loading = false;
       },
-      error: () => Swal.fire('Error', 'Failed to load students', 'error')
+      error: () => {
+        Swal.fire('Error', 'Failed to load students', 'error');
+        this.loading = false;
+      }
     });
   }
 
   loadCertificates() {
+    this.loading = true;
     this.http.get<Certificate[]>(`${this.apiUrl}/certificates/`).subscribe({
-      next: (res) => (this.certificates = res),
-      error: () => Swal.fire('Error', 'Failed to load certificates', 'error')
+      next: (res) => {
+        this.certificates = res;
+        this.loading = false;
+      },
+      error: () => {
+        Swal.fire('Error', 'Failed to load certificates', 'error');
+        this.loading = false;
+      }
     });
   }
 
@@ -118,8 +133,6 @@ export class CertificateAndIdsListComponent implements OnInit {
     this.editPreviewUrl = cert.certificate_file_url || null;
     this.isPanelOpen = true;
   }
-
-  // Removed duplicate handleEditFile method to fix duplicate function implementation error
 
   closePanel() {
     this.isPanelOpen = false;
@@ -165,7 +178,6 @@ export class CertificateAndIdsListComponent implements OnInit {
 
     this.http.post<Certificate>(`${this.apiUrl}/certificates/`, formData).subscribe({
       next: (res) => {
-        // Reload certificates to get updated file URLs
         this.loadCertificates();
         this.closePanel();
         Swal.fire('Success', 'Certificate added successfully', 'success');
@@ -198,7 +210,6 @@ export class CertificateAndIdsListComponent implements OnInit {
 
     this.http.put<Certificate>(`${this.apiUrl}/certificates/${this.selectedCertificate.id}/`, formData).subscribe({
       next: (updatedCert) => {
-        // Reload certificates to get updated file URLs
         this.loadCertificates();
         this.closePanel();
         Swal.fire('Success', 'Certificate updated successfully', 'success');
