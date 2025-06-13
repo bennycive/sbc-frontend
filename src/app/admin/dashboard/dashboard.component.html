@@ -118,16 +118,7 @@
     </div>
     </div>
 
-  <div *ngIf="['admin', 'hod', 'bursar'].includes(currentUserRole || '')" class="card mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <span>Request Trends</span>
-      <select class="form-select w-auto" [(ngModel)]="filterBy" (ngModelChange)="onFilterByChange()">
-        <option value="daily">Day to Day</option>
-        <option value="monthly">Monthly</option>
-        <option value="yearly">Yearly</option>
-      </select>
-    </div>
-    <div class="card-body">
-      <canvas #requestChart height="100"></canvas> </div>
-  </div>
+
+    
+
 </div>
