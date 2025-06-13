@@ -19,6 +19,10 @@
           </span>
         </button>
 
+        <button class="btn btn-secondary w-100 mb-3" (click)="simulateCaptureFingerprint()" disabled>
+          Simulate Capture
+        </button>
+
         <div class="text-muted mb-2">Status: <strong>{{ fingerprintStatus }}</strong></div>
 
         <div *ngIf="fingerprintImage" class="mb-3">
@@ -31,7 +35,7 @@
     </div>
 
     <!-- Security Questions Card -->
-    <div *ngIf="fingerprintFailed" class="col-12 col-md-5">
+    <div *ngIf="showSecurityQuestions" class="col-12 col-md-5">
       <div class="card p-4 shadow-lg rounded-4 h-100">
         <h4 class="fw-bold mb-3">Security Questions Verification</h4>
         <p class="text-muted">Fingerprint failed. Please answer the selected security questions below.</p>
@@ -43,12 +47,12 @@
           </select>
         </div>
 
-        <div *ngFor="let q of selectedQuestions; let i = index" class="mb-3 text-start">
-          <label class="form-label">{{ q.question }}</label>
-          <input type="text" class="form-control" [(ngModel)]="answers[q.question]" placeholder="Enter your answer">
+        <div *ngIf="selectedQuestions.length > 0" class="mb-3 text-start">
+          <label class="form-label">{{ selectedQuestions[0].question }}</label>
+          <input type="text" class="form-control" [(ngModel)]="answers[selectedQuestions[0].question]" placeholder="Enter your answer">
         </div>
 
-        <button class="btn btn-success w-100" [disabled]="!canSubmitAnswers()" (click)="submitAnswers()">Submit Answers</button>
+        <button class="btn btn-success w-100" [disabled]="selectedQuestions.length === 0 || !answers[selectedQuestions[0].question] || !answers[selectedQuestions[0].question].trim()" (click)="submitAnswers()">Submit Answer</button>
       </div>
     </div>
 
