@@ -18,7 +18,7 @@
       </div>
     </div>
 
-    <div *ngIf="currentUserRole === 'student'">
+  <div *ngIf="currentUserRole === 'student' || currentUserRole === 'exam-officer'">
 
       <div class="row g-4 mb-4">
         <div class="col-md-4" *ngFor="let card of studentSummaryCards">
@@ -93,7 +93,6 @@
       </div>
     </div>
   </div>
-
   <div *ngIf="currentUserRole === 'admin'">
     <div class="row g-4 mb-4">
       <div class="col-md-4" *ngFor="let card of adminHodLikeCards">
@@ -119,6 +118,6 @@
     </div>
 
 
-    
+
 
 </div>

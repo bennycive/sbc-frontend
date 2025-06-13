@@ -19,7 +19,7 @@ interface CustomUser {
   first_name: string;
   last_name: string;
   email: string;
-  role: 'student' | 'hod' | 'bursar' | 'admin' | '';
+  role: 'student' | 'hod' | 'bursar' | 'admin' | 'exam-officer' | '';
   department?: string; // Program name or department user belongs to
   program?: string; // Added program field
   biometric_setup_complete?: boolean; // Example field for biometric status
@@ -79,7 +79,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('requestChart') requestChartCanvas!: ElementRef<HTMLCanvasElement>;
   private chartInstance?: Chart;
 
-  currentUserRole: 'student' | 'hod' | 'bursar' | 'admin' | '' = '';
+  currentUserRole: 'student' | 'hod' | 'bursar' | 'admin' | 'exam-officer' | '' = '';
   filterBy: string = 'daily'; // For chart
   formattedDate: string = '';
   user: CustomUser | null = null;
@@ -152,8 +152,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.loading = true; // Show preloader
 
     switch (this.currentUserRole) {
-      case 'student':
-        this.fetchStudentDashboardData(this.user.id);
+      case 'exam-officer':
+        this.fetchExamOfficerDashboardData();
         break;
       case 'hod':
         this.fetchHodDashboardData();
@@ -168,6 +168,30 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         console.warn("Unknown user role or no role defined for dashboard:", this.currentUserRole);
         this.loading = false; // Hide preloader if unknown role
     }
+  }
+
+  fetchExamOfficerDashboardData(): void {
+    // Fetch total certificate requests
+    const totalRequests$ = this.http.get<number>(`${this.apiEndpoints.transcriptCertificateRequests}total/`)
+      .pipe(catchError(() => of(0)));
+
+    // Fetch total verified by bursar and hod
+    const totalVerified$ = this.http.get<number>(`${this.apiEndpoints.transcriptCertificateRequests}verified/`)
+      .pipe(catchError(() => of(0)));
+
+    // Fetch certificates ready to print
+    const certificatesReady$ = this.http.get<any[]>(`${this.apiEndpoints.transcriptCertificateRequests}ready/`)
+      .pipe(catchError(() => of([])));
+
+    forkJoin([totalRequests$, totalVerified$, certificatesReady$]).subscribe(([totalRequests, totalVerified, certificatesReady]) => {
+      this.studentSummaryCards = [
+        { title: 'Total Requests', value: totalRequests ?? 0, icon: 'bi bi-journal-text', colorClass: 'text-primary' },
+        { title: 'Total Verified', value: totalVerified ?? 0, icon: 'bi bi-check-circle', colorClass: 'text-success' },
+        { title: 'Certificates Ready', value: certificatesReady?.length ?? 0, icon: 'bi bi-file-earmark-check', colorClass: 'text-primary' }
+      ];
+      // Additional logic to handle printing certificates can be added here
+      this.loading = false;
+    });
   }
 
   getFormattedDate(): string {
@@ -413,4 +437,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.renderChart();
     }
   }
+
+
 }
+
