@@ -12,7 +12,7 @@ export class WebauthnService {
 
   async register() {
     // Step 1: Get public key options from server
-    const options: any = await firstValueFrom(this.http.get(`${environment.apiBaseUrl}/mfa/register/options/`));
+    const options: any = await firstValueFrom(this.http.get(`${environment.apiBaseUrl}/users/mfa/register/options/`));
 
     // Step 2: Create credential
     options.challenge = this._bufferDecode(options.challenge);
@@ -22,7 +22,7 @@ export class WebauthnService {
 
     // Step 3: Send credential to server
     const credentialData = this._credentialToJSON(credential);
-    return this.http.post(`${environment.apiBaseUrl}/mfa/register/complete/`, credentialData).toPromise();
+    return this.http.post(`${environment.apiBaseUrl}/users/mfa/register/complete/`, credentialData).toPromise();
 
   }
 
@@ -41,6 +41,7 @@ export class WebauthnService {
     return this.http.post(`${environment.apiBaseUrl}/mfa/authenticate/complete/`, assertionData).toPromise();
 
   }
+  
 
   private _bufferDecode(value: string) {
     return Uint8Array.from(atob(value), c => c.charCodeAt(0));

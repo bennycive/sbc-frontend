@@ -7,14 +7,6 @@ import { AuthService } from '../../../auth/auth.service';
 import { CommonModule } from '@angular/common';
 import { WebauthnService } from '../../../services/webauthn.service';
 
-function bufferToBase64URL(buffer: ArrayBuffer): string {
-  const fromCharCode = String.fromCharCode(...new Uint8Array(buffer));
-  return btoa(fromCharCode)
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '');
-}
-
 @Component({
   selector: 'app-biometric-setup',
   standalone: true,
@@ -25,14 +17,16 @@ function bufferToBase64URL(buffer: ArrayBuffer): string {
 export class BiometricSetupComponent {
   fingerprintStatus: string = 'Not Captured';
   fingerprintImage: string | null = null;
-  fingerprintData: string | null = null;
+  fingerprintData: string | null = null; // Will store the JSON string of the WebAuthn response
   isScanning: boolean = false;
   fingerprintFailed: boolean = false;
   fingerprintCaptured: boolean = false;
 
   showSecurityQuestions: boolean = false;
 
+  // This array is the single source of truth for selected questions and their answers.
   selectedQuestions: { question: string; answer: string }[] = [];
+
   allQuestions: string[] = [
     'What is your mother’s maiden name?',
     'What was the name of your first pet?',
@@ -42,32 +36,37 @@ export class BiometricSetupComponent {
     'What is your childhood nickname?'
   ];
 
-  answers: { [key: string]: string } = {};
-
   constructor(
     private http: HttpClient,
     @Inject(AuthService) private authService: AuthService,
-    private webauthnService: WebauthnService
+    private webauthnService: WebauthnService // Injected WebAuthn service
   ) {}
 
+  /**
+   * Simulates fingerprint capture for testing purposes.
+   */
   simulateCaptureFingerprint() {
     this.fingerprintImage = 'https://via.placeholder.com/120x120.png?text=Fingerprint';
-    this.fingerprintData = 'SAMPLE_FINGERPRINT_HASH_DATA';
+    this.fingerprintData = '{"id":"SIMULATED_ID","rawId":"SIMULATED_RAW_ID","type":"public-key","response":{}}'; // Example JSON data
     this.fingerprintStatus = 'Fingerprint Captured Successfully';
     this.fingerprintCaptured = true;
     this.showSecurityQuestions = true;
   }
 
+  /**
+   * Initiates the WebAuthn registration process.
+   */
   async captureFingerprint() {
     if (this.isScanning) return;
 
     this.isScanning = true;
-    this.fingerprintStatus = 'Registering fingerprint...';
+    this.fingerprintFailed = false;
+    this.fingerprintStatus = 'Registering fingerprint... Please follow the browser prompt.';
 
     try {
-      const rawCredential = await this.webauthnService.register();
+      const registrationResponse = await this.webauthnService.register();
 
-      if (!rawCredential) {
+      if (!registrationResponse) {
         this.isScanning = false;
         this.fingerprintStatus = 'Fingerprint Registration Cancelled';
         this.fingerprintFailed = true;
@@ -75,20 +74,7 @@ export class BiometricSetupComponent {
         return;
       }
 
-      const credential = rawCredential as PublicKeyCredential;
-      const attestationResponse = credential.response as AuthenticatorAttestationResponse;
-
-      const registrationPayload = {
-        id: credential.id,
-        rawId: bufferToBase64URL(credential.rawId),
-        type: credential.type,
-        response: {
-          clientDataJSON: bufferToBase64URL(attestationResponse.clientDataJSON),
-          attestationObject: bufferToBase64URL(attestationResponse.attestationObject),
-        },
-      };
-
-      this.fingerprintData = JSON.stringify(registrationPayload);
+      this.fingerprintData = JSON.stringify(registrationResponse);
 
       this.isScanning = false;
       this.fingerprintStatus = 'Fingerprint Registered Successfully';
@@ -100,13 +86,18 @@ export class BiometricSetupComponent {
       this.isScanning = false;
       this.fingerprintStatus = 'Fingerprint Registration Failed';
       this.fingerprintFailed = true;
-      Swal.fire('Error', 'Fingerprint registration failed. Please try again.', 'error');
       console.error('WebAuthn registration error:', error);
+      Swal.fire('Error', 'Fingerprint registration failed. This could be due to a timeout, cancellation, or an unsupported device. Please try again.', 'error');
     }
   }
 
+  /**
+   * Toggles a security question in the selected list.
+   */
   toggleQuestionSelection(question: string) {
-    if (this.selectedQuestions.find(q => q.question === question)) {
+    const existingQuestion = this.selectedQuestions.find(q => q.question === question);
+
+    if (existingQuestion) {
       this.selectedQuestions = this.selectedQuestions.filter(q => q.question !== question);
     } else {
       if (this.selectedQuestions.length >= 3) {
@@ -117,106 +108,97 @@ export class BiometricSetupComponent {
     }
   }
 
-  updateAnswer(question: string, answer: string) {
-    const q = this.selectedQuestions.find(q => q.question === question);
-    if (q) q.answer = answer;
-  }
-
-  removeQuestion(question: string) {
-    this.selectedQuestions = this.selectedQuestions.filter(q => q.question !== question);
-  }
-
+  /**
+   * Checks if a question is currently selected. Used to manage the checkbox state.
+   */
   isQuestionSelected(question: string): boolean {
     return this.selectedQuestions.some(q => q.question === question);
   }
 
-  onQuestionSelect(event: Event) {
-    const selectedOptions = Array.from((event.target as HTMLSelectElement).selectedOptions);
-    this.selectedQuestions = selectedOptions.map((option: HTMLOptionElement) => ({
-      question: option.value,
-      answer: ''
-    }));
-  }
-
+  /**
+   * Checks if the form is ready for submission (exactly 3 questions selected with answers).
+   */
   canSubmitAnswers(): boolean {
     return (
-      this.selectedQuestions.length >= 3 &&
-      this.selectedQuestions.every(q => this.answers[q.question]?.trim() !== '')
+      this.selectedQuestions.length === 3 &&
+      this.selectedQuestions.every(q => q.answer && q.answer.trim() !== '')
     );
   }
 
+  /**
+   * Submits the selected security questions and their encrypted answers to the backend.
+   */
   submitAnswers() {
-    if (this.selectedQuestions.length < 3) {
-      Swal.fire('Error', 'Select at least 3 questions.', 'error');
+    if (!this.canSubmitAnswers()) {
+      Swal.fire('Error', 'Please select exactly 3 questions and provide an answer for each.', 'error');
       return;
     }
 
-    const encryptedAnswers = this.selectedQuestions.map(q => ({
-      question: q.question,
-      encryptedAnswer: CryptoJS.AES.encrypt(q.answer.trim(), 'secret-key').toString()
-    }));
-
-    console.log('Encrypted answers submitted:', encryptedAnswers);
-    Swal.fire('Success', 'Security answers submitted successfully.', 'success');
-
     const user = this.authService.getUser();
-    if (user && user.id && this.selectedQuestions.length > 0) {
-      const question = this.selectedQuestions[0].question;
-      const answer = this.answers[question];
-      const encryptedAnswer = CryptoJS.AES.encrypt(answer.trim(), 'secret-key').toString();
+    if (!user || !user.id) {
+        console.error('User ID is missing.');
+        Swal.fire('Error', 'Could not identify user. Please log in again.', 'error');
+        return;
+    }
 
-      this.http.post(`http://localhost:8000/users_api/security_questions/`, {
-        student: user.id,
-        security_questions: [{ question: question, encryptedAnswer: encryptedAnswer }]
-      }).subscribe({
+    const payload = {
+      student: user.id,
+      security_questions: this.selectedQuestions.map(q => ({
+        question: q.question,
+        encryptedAnswer: CryptoJS.AES.encrypt(q.answer.trim(), 'secret-key').toString()
+      }))
+    };
+
+    this.http.post(`http://localhost:8000/users_api/security_questions/`, payload)
+      .subscribe({
         next: (response) => {
-          console.log('Security question submitted successfully:', response);
-          Swal.fire('Success', 'Security question submitted successfully.', 'success');
-          this.selectedQuestions.shift();
-          delete this.answers[question];
+          console.log('Security questions submitted successfully:', response);
+          Swal.fire('Success', 'Security questions saved successfully.', 'success');
         },
         error: (error) => {
-          console.error('Error sending security question:', error);
-          Swal.fire('Error', 'Failed to save security question.', 'error');
+          console.error('Error sending security questions:', error);
+          Swal.fire('Error', 'Failed to save security questions.', 'error');
         }
       });
-    } else {
-      console.error('User ID is missing or no questions selected.');
-      Swal.fire('Error', 'User ID is missing or no questions selected.');
-    }
   }
 
+  /**
+   * Submits the captured biometric data to the server.
+   */
   submitBiometric() {
     if (!this.fingerprintData) {
-      Swal.fire('Error', 'Please capture fingerprint before submitting.', 'error');
+      Swal.fire('Error', 'Please capture your fingerprint before submitting.', 'error');
       return;
     }
 
-    console.log('Sending fingerprint data to server:', this.fingerprintData);
-    Swal.fire('Submitted', 'Fingerprint data submitted successfully.', 'success');
-
     const user = this.authService.getUser();
-    if (user && user.id && this.fingerprintData) {
-      this.http.post(`http://localhost:8000/fingerprints/`, {
-        student: user.id,
-        fingerprint_data: this.fingerprintData
-      }).subscribe({
-        next: (response) => {
-          console.log('Fingerprint data sent successfully:', response);
-          Swal.fire('Success', 'Fingerprint data saved successfully.', 'success');
-        },
-        error: (error) => {
-          console.error('Error sending fingerprint data:', error);
-          Swal.fire('Error', 'Failed to save fingerprint data.', 'error');
-        }
-      });
-    } else {
-      console.error('User ID or fingerprint data is missing.');
-      Swal.fire('Error', 'User ID or fingerprint data is missing.');
+    if (!user || !user.id) {
+      console.error('User ID is missing.');
+      Swal.fire('Error', 'User ID is missing or fingerprint data is missing.', 'error');
+      return;
     }
+
+    this.http.post(`http://localhost:8000/fingerprints/`, {
+      student: user.id,
+      fingerprint_data: this.fingerprintData // Sending the clean JSON string
+    }).subscribe({
+      next: (response) => {
+        console.log('Fingerprint data sent successfully:', response);
+        Swal.fire('Success', 'Fingerprint data saved successfully.', 'success');
+      },
+      error: (error) => {
+        console.error('Error sending fingerprint data:', error);
+        const errorMessage = error.error?.detail || 'Failed to save fingerprint data.';
+        Swal.fire('Error', errorMessage, 'error');
+      }
+    });
   }
 
+  /**
+   * Skips the biometric setup process.
+   */
   skipBiometric() {
     console.log('Biometric setup skipped');
   }
+  
 }

@@ -2,14 +2,14 @@
   <div class="row w-100 justify-content-center">
 
     <!-- Fingerprint Card -->
-    <div *ngIf="!fingerprintFailed" class="col-12 col-md-5 mb-4 mb-md-0">
-      <div class="card p-4 shadow-lg rounded-4 h-100">
+    <div class="col-12 col-md-6 col-lg-5 mb-4 mb-md-0">
+      <div class="card p-4 shadow-lg rounded-4 h-100 d-flex flex-column">
         <div class="finger-icon-wrapper mx-auto mb-3">
           <i class="bi bi-fingerprint display-1 text-primary" id="fingerIcon"></i>
         </div>
 
-        <h4 class="fw-bold">Fingerprint Verification</h4>
-        <p class="text-muted">Place your finger on the scanner and click below.</p>
+        <h4 class="fw-bold">Fingerprint Registration</h4>
+        <p class="text-muted">Place your finger on the scanner or use your device's biometric authentication.</p>
 
         <button class="btn btn-primary w-100 mb-3" [disabled]="isScanning" (click)="captureFingerprint()">
           <span *ngIf="!isScanning">Scan Finger</span>
@@ -19,42 +19,54 @@
           </span>
         </button>
 
-        <button class="btn btn-secondary w-100 mb-3" (click)="simulateCaptureFingerprint()" disabled>
-          Simulate Capture
-        </button>
-
         <div class="text-muted mb-2">Status: <strong>{{ fingerprintStatus }}</strong></div>
 
         <div *ngIf="fingerprintImage" class="mb-3">
           <img [src]="fingerprintImage" alt="Fingerprint" class="img-thumbnail shadow rounded" style="width: 120px;">
         </div>
 
-        <button class="btn btn-success w-100 mb-2" [disabled]="!fingerprintData" (click)="submitBiometric()">Submit Fingerprint</button>
-        <button class="btn btn-outline-secondary w-100" (click)="skipBiometric()">Skip</button>
+        <!-- This button group is pushed to the bottom of the card -->
+        <div class="mt-auto">
+            <button class="btn btn-success w-100 mb-2" [disabled]="!fingerprintCaptured" (click)="submitBiometric()">Submit Fingerprint</button>
+            <button class="btn btn-outline-secondary w-100" (click)="skipBiometric()">Skip for now</button>
+        </div>
       </div>
     </div>
 
     <!-- Security Questions Card -->
-    <div *ngIf="showSecurityQuestions" class="col-12 col-md-5">
-      <div class="card p-4 shadow-lg rounded-4 h-100">
-        <h4 class="fw-bold mb-3">Security Questions Verification</h4>
-        <p class="text-muted">Fingerprint failed. Please answer the selected security questions below.</p>
+    <div *ngIf="showSecurityQuestions" class="col-12 col-md-6 col-lg-5">
+      <div class="card p-4 shadow-lg rounded-4 h-100 d-flex flex-column">
+        <h4 class="fw-bold mb-3">Security Questions Setup</h4>
+        <p class="text-muted">As a backup, please select and answer exactly 3 security questions.</p>
 
+        <!-- Question Selection List with Checkboxes -->
         <div class="mb-3 text-start">
-          <label for="questionSelect" class="form-label">Select at least 3 questions</label>
-          <select id="questionSelect" multiple class="form-select" (change)="onQuestionSelect($event)">
-            <option *ngFor="let q of allQuestions" [value]="q">{{ q }}</option>
-          </select>
+            <label class="form-label fw-bold">Choose 3 Questions:</label>
+            <div *ngFor="let question of allQuestions" class="form-check">
+                <input class="form-check-input" type="checkbox" [id]="question"
+                       [checked]="isQuestionSelected(question)"
+                       (change)="toggleQuestionSelection(question)">
+                <label class="form-check-label" [for]="question">{{ question }}</label>
+            </div>
         </div>
 
+        <!-- Answer Inputs for Selected Questions -->
         <div *ngIf="selectedQuestions.length > 0" class="mb-3 text-start">
-          <label class="form-label">{{ selectedQuestions[0].question }}</label>
-          <input type="text" class="form-control" [(ngModel)]="answers[selectedQuestions[0].question]" placeholder="Enter your answer">
+            <hr>
+            <label class="form-label fw-bold">Provide Your Answers:</label>
+            <!-- This ngFor iterates through the selected questions and creates an input for each -->
+            <div *ngFor="let selectedQ of selectedQuestions; let i = index" class="mb-3">
+                <label [for]="'answer' + i" class="form-label small">{{ selectedQ.question }}</label>
+                <!-- [(ngModel)] now correctly binds to the 'answer' property of the object in the array -->
+                <input type="text" [id]="'answer' + i" class="form-control" [(ngModel)]="selectedQ.answer" placeholder="Enter your answer">
+            </div>
         </div>
 
-        <button class="btn btn-success w-100" [disabled]="selectedQuestions.length === 0 || !answers[selectedQuestions[0].question] || !answers[selectedQuestions[0].question].trim()" (click)="submitAnswers()">Submit Answer</button>
+        <!-- This button is pushed to the bottom and uses canSubmitAnswers() for its state -->
+        <button class="btn btn-success w-100 mt-auto" [disabled]="!canSubmitAnswers()" (click)="submitAnswers()">Submit Answers</button>
       </div>
     </div>
 
   </div>
+  
 </div>
