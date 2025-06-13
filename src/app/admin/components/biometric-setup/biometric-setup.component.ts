@@ -7,6 +7,17 @@ import { AuthService } from '../../../auth/auth.service';
 import { CommonModule } from '@angular/common';
 import { WebauthnService } from '../../../services/webauthn.service';
 
+/**
+ * Helper function to convert ArrayBuffer to a Base64URL-encoded string.
+ * This is a critical step for making WebAuthn credential data JSON-serializable.
+ */
+function bufferToBase64URL(buffer: ArrayBuffer): string {
+  return btoa(String.fromCharCode(...new Uint8Array(buffer)))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+}
+
 @Component({
   selector: 'app-biometric-setup',
   standalone: true,
@@ -22,36 +33,11 @@ export class BiometricSetupComponent {
   fingerprintFailed: boolean = false;
   fingerprintCaptured: boolean = false;
 
-  showSecurityQuestions: boolean = false;
-
-  // This array is the single source of truth for selected questions and their answers.
-  selectedQuestions: { question: string; answer: string }[] = [];
-
-  allQuestions: string[] = [
-    'What is your mother’s maiden name?',
-    'What was the name of your first pet?',
-    'What is your favorite food?',
-    'Where were you born?',
-    'What is your favorite color?',
-    'What is your childhood nickname?'
-  ];
-
   constructor(
     private http: HttpClient,
     @Inject(AuthService) private authService: AuthService,
-    private webauthnService: WebauthnService // Injected WebAuthn service
+    private webauthnService: WebauthnService
   ) {}
-
-  /**
-   * Simulates fingerprint capture for testing purposes.
-   */
-  simulateCaptureFingerprint() {
-    this.fingerprintImage = 'https://via.placeholder.com/120x120.png?text=Fingerprint';
-    this.fingerprintData = '{"id":"SIMULATED_ID","rawId":"SIMULATED_RAW_ID","type":"public-key","response":{}}'; // Example JSON data
-    this.fingerprintStatus = 'Fingerprint Captured Successfully';
-    this.fingerprintCaptured = true;
-    this.showSecurityQuestions = true;
-  }
 
   /**
    * Initiates the WebAuthn registration process.
@@ -64,9 +50,13 @@ export class BiometricSetupComponent {
     this.fingerprintStatus = 'Registering fingerprint... Please follow the browser prompt.';
 
     try {
-      const registrationResponse = await this.webauthnService.register();
+      // *** DEFINITIVE FIX ***
+      // We call the service's register method, assuming it returns the raw credential object
+      // from the `navigator.credentials.create()` call.
+      const credential = await this.webauthnService.register() as PublicKeyCredential;
 
-      if (!registrationResponse) {
+      if (!credential) {
+        // This case handles when the user cancels the browser prompt or the service returns null.
         this.isScanning = false;
         this.fingerprintStatus = 'Fingerprint Registration Cancelled';
         this.fingerprintFailed = true;
@@ -74,12 +64,24 @@ export class BiometricSetupComponent {
         return;
       }
 
+      // Manually create a JSON-safe object by converting all ArrayBuffers from the credential to Base64URL strings.
+      // This is the crucial step that prevents the "Illegal invocation" error.
+      const registrationResponse = {
+        id: credential.id,
+        rawId: bufferToBase64URL(credential.rawId),
+        response: {
+          attestationObject: bufferToBase64URL((credential.response as AuthenticatorAttestationResponse).attestationObject),
+          clientDataJSON: bufferToBase64URL((credential.response as AuthenticatorAttestationResponse).clientDataJSON),
+        },
+        type: credential.type,
+      };
+
+      // Now that registrationResponse is a clean, JSON-safe object, we can safely stringify it.
       this.fingerprintData = JSON.stringify(registrationResponse);
 
       this.isScanning = false;
       this.fingerprintStatus = 'Fingerprint Registered Successfully';
       this.fingerprintCaptured = true;
-      this.showSecurityQuestions = true;
       Swal.fire('Success', 'Fingerprint registered successfully.', 'success');
 
     } catch (error) {
@@ -89,77 +91,6 @@ export class BiometricSetupComponent {
       console.error('WebAuthn registration error:', error);
       Swal.fire('Error', 'Fingerprint registration failed. This could be due to a timeout, cancellation, or an unsupported device. Please try again.', 'error');
     }
-  }
-
-  /**
-   * Toggles a security question in the selected list.
-   */
-  toggleQuestionSelection(question: string) {
-    const existingQuestion = this.selectedQuestions.find(q => q.question === question);
-
-    if (existingQuestion) {
-      this.selectedQuestions = this.selectedQuestions.filter(q => q.question !== question);
-    } else {
-      if (this.selectedQuestions.length >= 3) {
-        Swal.fire('Limit Reached', 'You can only select up to 3 questions.', 'warning');
-        return;
-      }
-      this.selectedQuestions.push({ question, answer: '' });
-    }
-  }
-
-  /**
-   * Checks if a question is currently selected. Used to manage the checkbox state.
-   */
-  isQuestionSelected(question: string): boolean {
-    return this.selectedQuestions.some(q => q.question === question);
-  }
-
-  /**
-   * Checks if the form is ready for submission (exactly 3 questions selected with answers).
-   */
-  canSubmitAnswers(): boolean {
-    return (
-      this.selectedQuestions.length === 3 &&
-      this.selectedQuestions.every(q => q.answer && q.answer.trim() !== '')
-    );
-  }
-
-  /**
-   * Submits the selected security questions and their encrypted answers to the backend.
-   */
-  submitAnswers() {
-    if (!this.canSubmitAnswers()) {
-      Swal.fire('Error', 'Please select exactly 3 questions and provide an answer for each.', 'error');
-      return;
-    }
-
-    const user = this.authService.getUser();
-    if (!user || !user.id) {
-        console.error('User ID is missing.');
-        Swal.fire('Error', 'Could not identify user. Please log in again.', 'error');
-        return;
-    }
-
-    const payload = {
-      student: user.id,
-      security_questions: this.selectedQuestions.map(q => ({
-        question: q.question,
-        encryptedAnswer: CryptoJS.AES.encrypt(q.answer.trim(), 'secret-key').toString()
-      }))
-    };
-
-    this.http.post(`http://localhost:8000/users_api/security_questions/`, payload)
-      .subscribe({
-        next: (response) => {
-          console.log('Security questions submitted successfully:', response);
-          Swal.fire('Success', 'Security questions saved successfully.', 'success');
-        },
-        error: (error) => {
-          console.error('Error sending security questions:', error);
-          Swal.fire('Error', 'Failed to save security questions.', 'error');
-        }
-      });
   }
 
   /**
@@ -178,9 +109,19 @@ export class BiometricSetupComponent {
       return;
     }
 
+    // Parse the JSON string to an object before sending to avoid Illegal invocation error
+    let fingerprintPayload;
+    try {
+      fingerprintPayload = JSON.parse(this.fingerprintData);
+    } catch (e) {
+      console.error('Failed to parse fingerprintData JSON:', e);
+      Swal.fire('Error', 'Invalid fingerprint data format.', 'error');
+      return;
+    }
+
     this.http.post(`http://localhost:8000/fingerprints/`, {
       student: user.id,
-      fingerprint_data: this.fingerprintData // Sending the clean JSON string
+      fingerprint_data: fingerprintPayload
     }).subscribe({
       next: (response) => {
         console.log('Fingerprint data sent successfully:', response);
@@ -193,12 +134,4 @@ export class BiometricSetupComponent {
       }
     });
   }
-
-  /**
-   * Skips the biometric setup process.
-   */
-  skipBiometric() {
-    console.log('Biometric setup skipped');
-  }
-  
 }
