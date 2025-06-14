@@ -70,6 +70,8 @@ export class ViewCertificatesComponent implements OnInit {
     if (url && url.startsWith('//')) {
       url = 'https:' + url;
     }
-    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    // Add cache buster to avoid stale PDF rendering issues
+    const cacheBuster = `?cb=${new Date().getTime()}`;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url + cacheBuster);
   }
 }
