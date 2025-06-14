@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
 
 interface Certificate {
   id: number;
@@ -16,7 +17,8 @@ interface Certificate {
   selector: 'app-view-certificates',
   templateUrl: './view-certificates.component.html',
   styleUrls: ['./view-certificates.component.css'],
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
+  standalone: true,
 })
 export class ViewCertificatesComponent implements OnInit {
   certificates: Certificate[] = [];
@@ -34,7 +36,7 @@ export class ViewCertificatesComponent implements OnInit {
       next: (data) => {
         this.certificates = data.map(cert => ({
           ...cert,
-          certificate_file_url: cert.certificate_file, // 👈 Fix here
+          certificate_file_url: cert.file_url, // Use file_url from serializer
         }));
       },
       error: (err) => console.error('Failed to fetch certificates', err),
@@ -43,7 +45,12 @@ export class ViewCertificatesComponent implements OnInit {
 
   openPreview(cert: Certificate) {
     console.log('Previewing URL:', cert.certificate_file_url);
-    this.previewCert = cert;
+    if (cert.certificate_file_url) {
+      this.previewCert = cert;
+    } else {
+      console.error('No certificate file URL available for preview.');
+      this.previewCert = null;
+    }
   }
 
   closePreview() {
@@ -59,11 +66,10 @@ export class ViewCertificatesComponent implements OnInit {
   }
 
   getSafeUrl(url: string): SafeResourceUrl {
+    // Fix for Angular iframe sanitization issue: add 'https:' prefix if missing
+    if (url && url.startsWith('//')) {
+      url = 'https:' + url;
+    }
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
-
-
-
-
-
 }

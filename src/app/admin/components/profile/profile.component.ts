@@ -118,8 +118,7 @@ export class ProfileComponent implements OnInit {
         // Append based on role
         if (this.currentUserRole === 'student') {
           formData.append('yos', this.profile.yos || '');
-          // Removed 'program' field as it does not exist in backend model
-          // formData.append('program', this.profile.program || '');
+          formData.append('program', this.profile.program || '');
         }
 
         if (this.currentUserRole !== 'admin') {
