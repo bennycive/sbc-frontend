@@ -41,6 +41,7 @@
     transform: scale(1);
     opacity: 1;
   }
+  
 }
 
 /* Shake animation for error */
@@ -56,4 +57,5 @@
   transform: scale(1.05);
   cursor: pointer;
 }
+
 
