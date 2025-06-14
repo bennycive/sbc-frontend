@@ -106,61 +106,62 @@ export class ProfileComponent implements OnInit {
     this.disabled = false;
   }
 
-  save(): void {
-    const token = this.authService.getToken();
-    if (!this.profile || !this.profile.user || !token) return;
+    save(): void {
+        const token = this.authService.getToken();
+        if (!this.profile || !this.profile.user || !token) return;
 
-    const formData = new FormData();
-    formData.append('user', this.profile.user.toString());
-    formData.append('nida', this.profile.nida || '');
-    formData.append('phone_number', this.profile.phone_number || '');
+        const formData = new FormData();
+        formData.append('user', this.profile.user.toString());
+        formData.append('nida', this.profile.nida || '');
+        formData.append('phone_number', this.profile.phone_number || '');
 
-    // Append based on role
-    if (this.currentUserRole === 'student') {
-      formData.append('yos', this.profile.yos || '');
-      formData.append('program', this.profile.program || '');
-    }
+        // Append based on role
+        if (this.currentUserRole === 'student') {
+          formData.append('yos', this.profile.yos || '');
+          // Removed 'program' field as it does not exist in backend model
+          // formData.append('program', this.profile.program || '');
+        }
 
-    if (this.currentUserRole !== 'admin') {
-      formData.append('department', this.profile.department || '');
-    }
+        if (this.currentUserRole !== 'admin') {
+          formData.append('department', this.profile.department || '');
+        }
 
-    if (this.selectedFile) {
-      formData.append('image', this.selectedFile);
-    }
+        if (this.selectedFile) {
+          formData.append('image', this.selectedFile);
+        }
 
-    const headers = {
-      headers: new HttpHeaders({
-        'Authorization': `Bearer ${token}`
-      })
-    };
+        const headers = {
+          headers: new HttpHeaders({
+            'Authorization': `Bearer ${token}`
+          })
+        };
 
-    const request$ = this.profile.id
-      ? this.http.put(`http://127.0.0.1:8000/api/users/profiles/${this.profile.id}/`, formData, headers)
-      : this.http.post('http://127.0.0.1:8000/api/users/profiles/', formData, headers);
+        const request$ = this.profile.id
+          ? this.http.put(`http://127.0.0.1:8000/api/users/profiles/${this.profile.id}/`, formData, headers)
+          : this.http.post('http://127.0.0.1:8000/api/users/profiles/', formData, headers);
 
-    request$.subscribe({
-      next: () => {
-        Swal.fire({
-          icon: 'success',
-          title: 'Profile Saved',
-          text: 'Your profile has been successfully updated!',
-          confirmButtonColor: '#3085d6',
-          confirmButtonText: 'OK'
+        request$.subscribe({
+          next: () => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Profile Saved',
+              text: 'Your profile has been successfully updated!',
+              confirmButtonColor: '#3085d6',
+              confirmButtonText: 'OK'
+            });
+            this.isReadonly = true;
+            this.disabled = true;
+            // Re-fetch profile to update UI
+            this.fetchProfile(this.profile.user, token);
+            // Re-fetch profile to update UI
+            this.fetchProfile(this.profile.user, token);
+          },
+          error: (err) => {
+            console.error('Save failed', err);
+            Swal.fire('Error', 'Failed to save profile', 'error');
+          }
         });
-        this.isReadonly = true;
-        this.disabled = true;
-        // Re-fetch profile to update UI
-        this.fetchProfile(this.profile.user, token);
-        // Re-fetch profile to update UI
-        this.fetchProfile(this.profile.user, token);
-      },
-      error: (err) => {
-        console.error('Save failed', err);
-        Swal.fire('Error', 'Failed to save profile', 'error');
-      }
-    });
-  }
+    }
 
   onFileSelected(event: any): void {
     const file: File = event.target.files[0];

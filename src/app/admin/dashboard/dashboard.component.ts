@@ -93,6 +93,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   hodVerificationRequests: TableRow[] = [];
   bursarSummaryCards: SummaryCard[] = [];
   bursarVerifiedFinancials: TableRow[] = [];
+  bursarPendingFinancialVerifications: TableRow[] = [];
   adminHodLikeCards: SummaryCard[] = [];
   adminBursarLikeCards: SummaryCard[] = [];
 
@@ -101,6 +102,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   private apiEndpoints = {
     users: `${this.API_BASE_URL}users/users/`, // e.g., /api/users/users/{id}/
     transcriptCertificateRequests: `${this.API_BASE_URL}users/transcript-certificate-requests/`,
+    provisionalRequests: `${this.API_BASE_URL}users/provisional-requests/`,
     // DEFINE THESE BACKEND ENDPOINTS:
     hodSummary: `${this.API_BASE_URL}dashboard/hod/summary/`,
     // For HOD table, use transcriptCertificateRequests and filter by HOD status or a specific endpoint
@@ -151,47 +153,214 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.loading = true; // Show preloader
 
-    switch (this.currentUserRole) {
-      case 'exam-officer':
-        this.fetchExamOfficerDashboardData();
-        break;
-      case 'hod':
-        this.fetchHodDashboardData();
-        break;
-      case 'bursar':
-        this.fetchBursarDashboardData();
-        break;
-      case 'admin':
-        this.fetchAdminDashboardData();
-        break;
-      default:
-        console.warn("Unknown user role or no role defined for dashboard:", this.currentUserRole);
-        this.loading = false; // Hide preloader if unknown role
+    if (this.currentUserRole === 'student') {
+      this.fetchStudentDashboardData(this.user.id);
+    } else {
+      this.fetchCombinedRequests().subscribe((combinedRequests) => {
+        switch (this.currentUserRole) {
+          case 'exam-officer':
+            this.processExamOfficerData(combinedRequests);
+            break;
+          case 'hod':
+            this.processHodData(combinedRequests);
+            break;
+          case 'bursar':
+            this.processBursarData(combinedRequests);
+            break;
+          case 'admin':
+            this.processAdminData(combinedRequests);
+            break;
+          default:
+            console.warn("Unknown user role or no role defined for dashboard:", this.currentUserRole);
+            this.loading = false; // Hide preloader if unknown role
+        }
+      }, (error) => {
+        console.error('Error fetching combined requests:', error);
+        this.loading = false;
+      });
     }
   }
 
-  fetchExamOfficerDashboardData(): void {
-    // Fetch total certificate requests
-    const totalRequests$ = this.http.get<number>(`${this.apiEndpoints.transcriptCertificateRequests}total/`)
-      .pipe(catchError(() => of(0)));
+  private isValidDate(dateString: any): boolean {
+    if (!dateString) return false;
+    const date = new Date(dateString);
+    return !isNaN(date.getTime());
+  }
 
-    // Fetch total verified by bursar and hod
-    const totalVerified$ = this.http.get<number>(`${this.apiEndpoints.transcriptCertificateRequests}verified/`)
-      .pipe(catchError(() => of(0)));
+  private processHodData(requests: any[]) {
+    // Fetch HOD summary data from backend endpoint for accurate counts
+    this.http.get<any>(this.apiEndpoints.hodSummary)
+      .pipe(catchError(() => of({ classes: 0, departments: 0, students: 0 })))
+      .subscribe(summary => {
+        this.hodSummaryCards = [
+          { title: 'Classes Managed', value: summary.classes || 0, icon: 'bi bi-easel', colorClass: 'text-success' },
+          { title: 'Departments Overseen', value: summary.departments || 0, icon: 'bi bi-building', colorClass: 'text-success' },
+          { title: 'Total Students in Depts', value: summary.students || 0, icon: 'bi bi-people', colorClass: 'text-success' }
+        ];
+        this.loading = false;
+      });
 
-    // Fetch certificates ready to print
-    const certificatesReady$ = this.http.get<any[]>(`${this.apiEndpoints.transcriptCertificateRequests}ready/`)
-      .pipe(catchError(() => of([])));
+    // Filter requests relevant to HOD (e.g., those not yet verified by HOD)
+    const hodPendingRequests = requests.filter(r => !r.hod_verified && !r.exam_officer_verified);
 
-    forkJoin([totalRequests$, totalVerified$, certificatesReady$]).subscribe(([totalRequests, totalVerified, certificatesReady]) => {
-      this.studentSummaryCards = [
-        { title: 'Total Requests', value: totalRequests ?? 0, icon: 'bi bi-journal-text', colorClass: 'text-primary' },
-        { title: 'Total Verified', value: totalVerified ?? 0, icon: 'bi bi-check-circle', colorClass: 'text-success' },
-        { title: 'Certificates Ready', value: certificatesReady?.length ?? 0, icon: 'bi bi-file-earmark-check', colorClass: 'text-primary' }
-      ];
-      // Additional logic to handle printing certificates can be added here
-      this.loading = false;
-    });
+    this.hodVerificationRequests = hodPendingRequests.map(req => ({
+      id: req.id,
+      student: req.student_name,
+      course: req.program,
+      request_type: req.request_type,
+      date: this.datePipe.transform(req.submitted_at, 'mediumDate') || 'N/A',
+    }));
+  }
+
+  private processBursarData(requests: any[]) {
+    // Filter requests relevant to bursar
+    const allRequests = requests.length;
+    const pendingBursar = requests.filter(r => !r.bursar_verified).length;
+    const completedByBursar = requests.filter(r => r.bursar_verified).length;
+    const rejectedByBursar = 0; // Placeholder, depends on API data
+
+    this.bursarSummaryCards = [
+      { title: 'All Financial Requests', value: allRequests, icon: 'bi bi-envelope', colorClass: 'text-primary' },
+      { title: 'Pending My Verification', value: pendingBursar, icon: 'bi bi-clock-history', colorClass: 'text-primary' },
+      { title: 'Verified by Me', value: completedByBursar, icon: 'bi bi-check-circle', colorClass: 'text-primary' },
+      { title: 'Rejected by Me', value: rejectedByBursar, icon: 'bi bi-x-circle', colorClass: 'text-primary' }
+    ];
+
+    // Fetch bursar verified financials from existing endpoint
+    this.http.get<any[]>(`${this.apiEndpoints.bursarVerifiedFinancials}?bursar_verified=true&limit=10`)
+      .pipe(
+        map(records => records.map((rec): TableRow => {
+          let studentName = 'N/A';
+          if (typeof rec.user === 'object' && rec.user !== null) {
+            studentName = `${rec.user.first_name || ''} ${rec.user.last_name || ''}`.trim() || rec.user.username || 'Unknown';
+          } else if (rec.student_name) {
+            studentName = rec.student_name;
+          } else if (rec.user_id || rec.user) {
+            studentName = `User ID: ${rec.user_id || rec.user}`;
+          }
+          return {
+            student: studentName,
+            amount: this.datePipe.transform(rec.amount_paid || rec.amount, 'currency', 'USD', 'symbol') || '$0.00',
+            date: this.datePipe.transform(rec.payment_date || rec.date, 'mediumDate') || 'N/A'
+          };
+        })),
+        catchError(() => of([]))
+      )
+      .subscribe(data => {
+        this.bursarVerifiedFinancials = data;
+        this.loading = false;
+      });
+  }
+
+  private processAdminData(requests: any[]) {
+    // Fetch admin summary data from backend endpoint for accurate counts
+    this.http.get<any>(this.apiEndpoints.adminSummary)
+      .pipe(catchError(() => of({
+        total_classes: 0, total_departments: 0, total_students: 0,
+        total_requests: 0, total_pending: 0, total_completed: 0, total_rejected: 0
+      })))
+      .subscribe(summary => {
+        this.adminHodLikeCards = [
+          { title: 'Total Classes', value: summary.total_classes || 0, icon: 'bi bi-easel', colorClass: 'text-success' },
+          { title: 'Total Departments', value: summary.total_departments || 0, icon: 'bi bi-building', colorClass: 'text-success' },
+          { title: 'Total Students', value: summary.total_students || 0, icon: 'bi bi-people', colorClass: 'text-success' }
+        ];
+        this.adminBursarLikeCards = [
+          { title: 'Total System Requests', value: summary.total_requests || 0, icon: 'bi bi-envelope-paper', colorClass: 'text-primary' },
+          { title: 'Total Pending Verifications', value: summary.total_pending || 0, icon: 'bi bi-hourglass-split', colorClass: 'text-primary' },
+          { title: 'Total Completed Requests', value: summary.total_completed || 0, icon: 'bi bi-patch-check', colorClass: 'text-primary' },
+          { title: 'Total Rejected', value: summary.total_rejected || 0, icon: 'bi bi-x-octagon', colorClass: 'text-primary' }
+        ];
+        this.loading = false;
+      });
+  }
+
+  private fetchCombinedRequests() {
+    const mapItemToRecord = (item: any, requestTypeOverride?: string) => {
+      const user = item.user || {};
+
+      const firstName = user.first_name || item.user_first_name || item.first_name || '';
+      const lastName = user.last_name || item.user_last_name || item.last_name || '';
+
+      let studentName = (firstName + ' ' + lastName).trim();
+      if (!studentName && (user.username || item.user_username)) {
+        studentName = user.username || item.user_username;
+      } else if (!studentName) {
+        studentName = 'N/A';
+      }
+
+      let fName = user.first_name || item.user_first_name || item.first_name;
+      let lName = user.last_name || item.user_last_name || item.last_name;
+
+      if (fName && lName) {
+          studentName = `${fName} ${lName}`;
+      } else if (fName) {
+          studentName = fName;
+      } else if (lName) {
+          studentName = lName;
+      } else if (user.username) {
+          studentName = user.username;
+      } else if (item.user_username) {
+          studentName = item.user_username;
+      } else {
+          studentName = 'N/A';
+      }
+
+      let program = item.programme || item.user_program || user.program || user.department || 'N/A';
+      if (requestTypeOverride === 'provisional' && item.programme) {
+          program = item.programme;
+      }
+
+      return {
+        ...item,
+        id: item.id,
+        request_type: requestTypeOverride || item.request_type,
+        student_name: studentName.trim(),
+        program: program,
+        submitted_at: this.isValidDate(item.submitted_at) ? new Date(item.submitted_at) : new Date(0),
+        hod_verified: item.hod_verified,
+        bursar_verified: item.bursar_verified,
+        exam_officer_verified: item.exam_officer_approved,
+        user_id: user.id || item.user
+      };
+    };
+
+    const transcriptRequests$ = this.http.get<any[]>(this.apiEndpoints.transcriptCertificateRequests)
+      .pipe(
+        map(data => data.map(item => mapItemToRecord(item))),
+        catchError(() => of([]))
+      );
+
+    const provisionalRequests$ = this.http.get<any[]>(this.apiEndpoints.provisionalRequests)
+      .pipe(
+        map(data => data.map(item => mapItemToRecord(item, 'provisional'))),
+        catchError(() => of([]))
+      );
+
+    return forkJoin([transcriptRequests$, provisionalRequests$]).pipe(
+      map(([transcriptRequests, provisionalRequests]) => {
+        const combined = [...transcriptRequests, ...provisionalRequests];
+        // Deduplicate if necessary
+        return combined.filter((record, index, self) =>
+          index === self.findIndex((r) => (
+            r.id === record.id && r.request_type === record.request_type
+          ))
+        );
+      })
+    );
+  }
+
+  private processExamOfficerData(requests: any[]) {
+    const totalRequests = requests.length;
+    const totalVerified = requests.filter(r => r.exam_officer_verified).length;
+    const certificatesReady = requests.filter(r => r.hod_verified && r.bursar_verified && r.exam_officer_verified);
+
+    this.studentSummaryCards = [
+      { title: 'Total Requests', value: totalRequests, icon: 'bi bi-journal-text', colorClass: 'text-primary' },
+      { title: 'Total Verified', value: totalVerified, icon: 'bi bi-check-circle', colorClass: 'text-success' },
+      { title: 'Certificates Ready', value: certificatesReady.length, icon: 'bi bi-file-earmark-check', colorClass: 'text-primary' }
+    ];
+    this.loading = false;
   }
 
   getFormattedDate(): string {
@@ -273,6 +442,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         Swal.fire('Error', 'Failed to update profile', 'error');
       }
     });
+    
   }
 
   fetchHodDashboardData(): void {

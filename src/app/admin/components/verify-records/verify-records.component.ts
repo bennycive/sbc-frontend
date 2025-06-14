@@ -66,9 +66,8 @@ export class VerifyRecordsComponent implements OnInit {
   constructor(private http: HttpClient) { }
 
   ngOnInit() {
+    this.role = localStorage.getItem('userRole') || 'exam_officer';
     this.fetchRecords();
-    // Example: Set role dynamically based on actual user role service
-    // this.role = this.authService.getUserRole();
   }
 
   // fetchRecords() {
@@ -159,61 +158,53 @@ export class VerifyRecordsComponent implements OnInit {
     const mapItemToRecord = (item: any, requestTypeOverride?: string) => {
     const user = item.user || {};
 
-    console.log('API ITEM RECEIVED:', JSON.stringify(item, null, 2));
-    // VITAL DEBUGGING STEPS:
-    console.log('Original API item received:', JSON.stringify(item, null, 2)); // Log the whole item
-    console.log('Extracted item.user part:', JSON.stringify(item.user, null, 2)); // Log just the item.user part
-    console.log('Assigned user variable:', JSON.stringify(user, null, 2)); // Log the 'user' variable after 'item.user || {}'
-
-    const firstName = user.first_name || item.user_first_name || item.first_name || '';
-    const lastName = user.last_name || item.user_last_name || item.last_name || '';
-
-    let studentName = (firstName + ' ' + lastName).trim();
-    if (!studentName && (user.username || item.user_username)) {
-      studentName = user.username || item.user_username;
-    } else if (!studentName) { // This means studentName was empty after trying first/last and username
-      studentName = 'N/A';
-    }
-
-    // If you see "undefined" in the table, it might be that studentName became "undefined undefined"
-    // and then the if conditions were not met as "undefined undefined" is not falsy.
-    // Let's refine the studentName logic slightly for robustness:
-
-    let fName = user.first_name || item.user_first_name || item.first_name;
-    let lName = user.last_name || item.user_last_name || item.last_name;
-
-    if (fName && lName) {
-        studentName = `${fName} ${lName}`;
-    } else if (fName) {
-        studentName = fName;
-    } else if (lName) {
-        studentName = lName;
+    // Improved student name extraction with fallback to profile if available
+    let studentName = 'N/A';
+    if (user.first_name || user.last_name) {
+      studentName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+    } else if (item.user_first_name || item.user_last_name) {
+      studentName = `${item.user_first_name || ''} ${item.user_last_name || ''}`.trim();
     } else if (user.username) {
-        studentName = user.username;
+      studentName = user.username;
     } else if (item.user_username) {
-        studentName = item.user_username;
-    } else {
-        studentName = 'N/A'; // Default if no name components found
+      studentName = item.user_username;
     }
 
-
-    // Consolidate program logic
-    let program = item.programme || item.user_program || user.program || user.department || 'N/A'; // Added user.department as a common source
+    // Program extraction with fallback to profile department if available
+    let program = item.programme || item.user_program || user.program || user.department || 'N/A';
     if (requestTypeOverride === 'provisional' && item.programme) {
         program = item.programme;
     }
 
+    // Determine status based on role and verification flags
+    let status = 'Pending';
+    if (this.role === 'hod') {
+      status = item.hod_verified ? 'Verified' : 'Pending';
+    } else if (this.role === 'bursar') {
+      status = item.bursar_verified ? 'Verified' : 'Pending';
+    } else if (this.role === 'exam_officer') {
+      status = item.exam_officer_approved ? 'Verified' : 'Pending';
+    } else if (this.role === 'admin') {
+      // Admin sees overall status
+      if (item.hod_verified && item.bursar_verified && item.exam_officer_approved) {
+        status = 'Verified';
+      } else {
+        status = 'Pending';
+      }
+    }
+
     return {
-      ...item, // Spread original item first
+      ...item,
       id: item.id,
       request_type: requestTypeOverride || item.request_type,
-      student_name: studentName.trim(), // Ensure student_name is a string
+      student_name: studentName,
       program: program,
       submitted_at: this.isValidDate(item.submitted_at) ? new Date(item.submitted_at) : new Date(0),
       hod_verified: item.hod_verified,
       bursar_verified: item.bursar_verified,
       exam_officer_verified: item.exam_officer_approved,
-      user_id: user.id || item.user // Prioritize ID from nested object if present
+      user_id: user.id || item.user,
+      status: status
     };
 };
 

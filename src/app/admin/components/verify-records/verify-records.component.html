@@ -140,7 +140,7 @@
         </li>
       </ul>
       <ng-template #noAcademicDataHOD><p class="text-muted">No academic records found or loaded.</p></ng-template>
-      <button class="btn btn-success mt-2" (click)="verify('hod')" [disabled]="record.hod_verified">
+      <button class="btn btn-success mt-2" (click)="verify('hod')" [disabled]="record.hod_verified" style="cursor: pointer;">
         <i class="bi bi-check-circle"></i> {{ record.hod_verified ? 'HOD Verified' : 'Verify Academic Records' }}
       </button>
     </div>
@@ -159,7 +159,7 @@
       </div>
       <ng-template #noFinancialDataBursar><p class="text-muted">No financial records found or loaded.</p></ng-template>
       <p *ngIf="record.financialRecords?.has_pending_dues" class="text-danger fw-bold">⚠️ Pending Dues Exist</p>
-      <button class="btn btn-success mt-2" [disabled]="record.financialRecords?.has_pending_dues || record.bursar_verified" (click)="verify('bursar')">
+      <button class="btn btn-success mt-2" [disabled]="record.financialRecords?.has_pending_dues || record.bursar_verified" (click)="verify('bursar')" style="cursor: pointer;">
         <i class="bi bi-cash-coin"></i> {{ record.bursar_verified ? 'Bursar Verified' : 'Verify Payments' }}
       </button>
     </div>
@@ -224,7 +224,7 @@
       </p>
       <button class="btn btn-success"
               [disabled]="!record.hod_verified || !record.bursar_verified || record.exam_officer_verified"
-              (click)="verify('exam_officer')">
+              (click)="verify('exam_officer')" style="cursor: pointer;">
         <i class="bi bi-check2-square"></i> {{ record.exam_officer_verified ? 'Final Verified' : 'Final Verify Request' }}
       </button>
       <button class="btn btn-primary ms-2" *ngIf="record.exam_officer_verified" (click)="printCertificate()">
