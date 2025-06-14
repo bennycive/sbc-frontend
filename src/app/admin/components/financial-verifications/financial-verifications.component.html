@@ -6,7 +6,7 @@
         <tr>
           <th>Request ID</th>
           <th>Student Name</th>
-          <th>Matriculation Number</th>
+          <th>RegNo</th>
           <th>Request Type</th>
           <th>Copies</th>
           <th>Submitted At</th>
@@ -17,7 +17,7 @@
       <tbody>
         <tr *ngFor="let req of transcriptRequests" (click)="req.user ? viewFinancialDetails(financialDetailModal, req.user.id, req.user.first_name + ' ' + req.user.last_name) : null" style="cursor: pointer;">
           <td>{{ req.id }}</td>
-          <td>{{ req.user ? (req.user.first_name + ' ' + req.user.last_name) : 'N/A' }}</td>
+          <td>{{ req.user ? ((req.user.first_name && req.user.last_name) ? (req.user.first_name + ' ' + req.user.last_name) : req.user.username) : 'N/A' }}</td>
           <td>{{ req.user ? req.user.username : 'N/A' }}</td>
           <td>{{ req.request_type }}</td>
           <td>{{ req.number_of_copies }}</td>
@@ -40,7 +40,7 @@
         <tr>
           <th>ID</th>
           <th>Student Name</th>
-          <th>Matriculation No.</th>
+          <th>RegNo.</th>
           <th>Address</th>
           <th>Contact</th>
           <th>Admission Year</th>

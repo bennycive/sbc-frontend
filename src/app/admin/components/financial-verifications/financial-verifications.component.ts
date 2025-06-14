@@ -66,12 +66,12 @@ export class FinancialVerificationsComponent implements OnInit {
   private transcriptApiUrl = `${this.baseUrl}transcript-certificate-requests/`;
   private provisionalApiUrl = `${this.baseUrl}provisional-requests/`;
   private financialDetailsApiUrl = `${this.baseUrl}student-financials/`;
+  private userDetailsApiUrl = `${this.baseUrl}users/`; // Corrected endpoint for user details
 
   // --- Services Injection using inject() ---
   private http = inject(HttpClient);
   private datePipe = inject(DatePipe);
   private modalService = inject(NgbModal);
-
 
   ngOnInit(): void {
     this.loadAllRequests();
@@ -87,6 +87,7 @@ export class FinancialVerificationsComponent implements OnInit {
     this.http.get<FinancialRequest[]>(this.transcriptApiUrl).subscribe({
       next: (data) => {
         this.transcriptRequests = data;
+        this.loadUserDetailsForRequests(this.transcriptRequests);
       },
       error: (err) => console.error('Failed to load transcript requests', err),
     });
@@ -97,8 +98,27 @@ export class FinancialVerificationsComponent implements OnInit {
     this.http.get<FinancialRequest[]>(this.provisionalApiUrl).subscribe({
       next: (data) => {
         this.provisionalRequests = data;
+        this.loadUserDetailsForRequests(this.provisionalRequests);
       },
       error: (err) => console.error('Failed to load provisional requests', err),
+    });
+  }
+
+  // New method to load user details by user ID for requests
+  loadUserDetailsForRequests(requests: FinancialRequest[]) {
+    requests.forEach(req => {
+      if (req.user && req.user.id) {
+        this.http.get<User>(`${this.userDetailsApiUrl}${req.user.id}/`).subscribe({
+          next: (userData) => {
+            req.user.first_name = userData.first_name || '';
+            req.user.last_name = userData.last_name || '';
+            req.user.username = userData.username || '';
+          },
+          error: (err) => {
+            console.error(`Failed to load user details for user ID ${req.user.id}`, err);
+          }
+        });
+      }
     });
   }
 

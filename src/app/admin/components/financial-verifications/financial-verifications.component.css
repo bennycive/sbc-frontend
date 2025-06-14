@@ -1,0 +1,312 @@
+/* Student Records Table Stylesheet */
+
+/* Container and Layout */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Typography */
+h3 {
+  color: #2c3e50;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+/* Section Separator */
+hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #dee2e6, transparent);
+  margin: 40px 0;
+}
+
+/* Table Container */
+.table-responsive {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+  overflow: hidden;
+}
+
+/* Base Table Styles */
+.table {
+  margin-bottom: 0;
+  background-color: #fff;
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+
+/* Table Header */
+.table thead th {
+  background-color: #022548;; /* Dark blue */
+  color: #ffffff;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  padding: 15px 12px;
+  border: none;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.table thead th:first-child {
+  border-top-left-radius: 8px;
+}
+
+.table thead th:last-child {
+  border-top-right-radius: 8px;
+}
+
+/* Table Body */
+.table tbody td {
+  padding: 12px;
+  vertical-align: middle;
+  border-top: 1px solid #e9ecef;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+/* Table Row Styles */
+.table tbody tr {
+  transition: all 0.2s ease-in-out;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: #f8f9fa;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #e3f2fd;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+/* Badge Styles */
+.badge {
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bg-success {
+  background-color: #28a745 !important;
+  color: white;
+}
+
+.bg-danger {
+  background-color: #dc3545 !important;
+  color: white;
+}
+
+/* Button Styles */
+.btn {
+  border-radius: 6px;
+  font-weight: 500;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  border: none;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: #218838;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.btn-success:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+
+/* Modal Styles */
+.modal-header {
+  background-color: #022548;;
+  color: white;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+}
+
+.modal-title {
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+.btn-close {
+  filter: invert(1);
+}
+
+.modal-body {
+  padding: 25px;
+  background-color: #fff;
+}
+
+.modal-body h5 {
+  color: #2c3e50;
+  font-weight: 600;
+  margin-bottom: 15px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.modal-footer {
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  border-radius: 0 0 8px 8px;
+}
+
+.btn-outline-dark {
+  color: #343a40;
+  border-color: #343a40;
+  background-color: transparent;
+}
+
+.btn-outline-dark:hover {
+  background-color: #343a40;
+  color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .container {
+    max-width: 100%;
+    padding: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+  
+  h3 {
+    font-size: 1.3rem;
+  }
+  
+  .table-responsive {
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+  }
+  
+  .table thead th {
+    font-size: 0.75rem;
+    padding: 12px 8px;
+  }
+  
+  .table tbody td {
+    padding: 10px 8px;
+    font-size: 0.85rem;
+  }
+  
+  .btn-sm {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+  
+  /* Stack table content on very small screens */
+  .table-responsive {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .table thead th,
+  .table tbody td {
+    padding: 8px 6px;
+  }
+  
+  .badge {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+  }
+  
+  .btn-sm {
+    padding: 4px 6px;
+    font-size: 0.7rem;
+  }
+  
+  h3 {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .btn,
+  .modal {
+    display: none !important;
+  }
+  
+  .table-hover tbody tr:hover {
+    background-color: transparent !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  
+  .table {
+    border-collapse: collapse;
+  }
+  
+  .table thead th,
+  .table tbody td {
+    border: 1px solid #000;
+  }
+}
+
+/* Accessibility Improvements */
+.table tbody tr:focus {
+  outline: 2px solid #007bff;
+  outline-offset: -2px;
+}
+
+.btn:focus {
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.3);
+  outline: none;
+}
+
+/* Loading States */
+.table tbody tr.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.table tbody tr.loading td {
+  color: #6c757d;
+}
+
+/* Error States */
+.table tbody tr.error {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.table tbody tr.error:hover {
+  background-color: #f5c6cb;
+}
