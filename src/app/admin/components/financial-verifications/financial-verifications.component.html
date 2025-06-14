@@ -1,92 +1,138 @@
 <div class="container mt-5">
-  <!-- Panel for Pending Financial Verifications -->
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h3 class="panel-title">Pending Financial Verifications</h3>
-    </div>
-    <div class="panel-body">
-      <!-- Responsive Table for Pending Verifications -->
-      <div class="table-responsive">
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th>Request ID</th>
-              <th>Student Name</th>
-              <th>Matriculation Number</th>
-              <th>Amount Due</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let req of pendingTranscriptRequests">
-              <td>{{ req.id }}</td>
-              <td>{{ req.user.first_name }} {{ req.user.last_name }}</td>
-              <td>{{ req.user.username }}</td>
-              <td><!-- TODO: Add amount due --></td>
-              <td>
-                <button class="btn btn-primary btn-sm" (click)="openModal('transcript', req)">View</button>
-              </td>
-            </tr>
-            <tr *ngFor="let req of pendingProvisionalRequests">
-              <td>{{ req.id }}</td>
-              <td>{{ req.user.first_name }} {{ req.user.last_name }}</td>
-              <td>{{ req.user.username }}</td>
-              <td><!-- TODO: Add amount due --></td>
-              <td>
-                <button class="btn btn-primary btn-sm" (click)="openModal('provisional', req)">View</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+  <h3>Transcript Certificate Requests</h3>
+  <div class="table-responsive">
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th>Request ID</th>
+          <th>Student Name</th>
+          <th>Matriculation Number</th>
+          <th>Request Type</th>
+          <th>Copies</th>
+          <th>Submitted At</th>
+          <th>Bursar Verified</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let req of transcriptRequests" (click)="req.user ? viewFinancialDetails(financialDetailModal, req.user.id, req.user.first_name + ' ' + req.user.last_name) : null" style="cursor: pointer;">
+          <td>{{ req.id }}</td>
+          <td>{{ req.user ? (req.user.first_name + ' ' + req.user.last_name) : 'N/A' }}</td>
+          <td>{{ req.user ? req.user.username : 'N/A' }}</td>
+          <td>{{ req.request_type }}</td>
+          <td>{{ req.number_of_copies }}</td>
+          <td>{{ formatDate(req.submitted_at) }}</td>
+          <td><span [ngClass]="{'badge bg-success': req.bursar_verified, 'badge bg-danger': !req.bursar_verified}">{{ req.bursar_verified ? 'Yes' : 'No' }}</span></td>
+          <td>
+            <button class="btn btn-success btn-sm" [disabled]="req.bursar_verified" (click)="verifyRequest('transcript', req.id); $event.stopPropagation()">Verify</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
-  <!-- Modal for Financial Details -->
-  <div class="modal" tabindex="-1" [ngClass]="{'show d-block': showModal}" role="dialog" aria-labelledby="financialDetailsModalLabel" aria-hidden="!showModal">
-    <div class="modal-dialog modal-lg" role="document">
-      <div class="modal-content" *ngIf="selectedRequest">
-        <div class="modal-header">
-          <h5 class="modal-title" id="financialDetailsModalLabel">Financial Details for {{ selectedRequest.user.first_name }} {{ selectedRequest.user.last_name }}</h5>
-          <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
-        </div>
-        <div class="modal-body">
-          <h6>Transcript/Provisional Request Details</h6>
-          <p><strong>Request ID:</strong> {{ selectedRequest.id }}</p>
-          <p><strong>Submitted At:</strong> {{ formatDate(selectedRequest.submitted_at) }}</p>
-          <p><strong>Bursar Verified:</strong> {{ selectedRequest.bursar_verified ? 'Yes' : 'No' }}</p>
+  <hr>
 
-          <h6>Payment Records</h6>
-          <table class="table table-bordered table-sm">
-            <thead>
-              <tr>
-                <th>Payment Type</th>
-                <th>Amount</th>
-                <th>Date Paid</th>
-                <th>Receipt Number</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let payment of selectedRequest.payment_records">
-                <td>{{ payment.payment_type }}</td>
-                <td>{{ payment.amount }}</td>
-                <td>{{ formatDate(payment.date_paid) }}</td>
-                <td>{{ payment.receipt_number }}</td>
-              </tr>
-              <tr *ngFor="let otherPayment of selectedRequest.other_payment_records">
-                <td>{{ otherPayment.payment_type }}</td>
-                <td>{{ otherPayment.amount }}</td>
-                <td>{{ formatDate(otherPayment.date_paid) }}</td>
-                <td>{{ otherPayment.receipt_number }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-success" (click)="verifySelectedRequest()">Verify</button>
-          <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
-        </div>
-      </div>
-    </div>
+  <h3>Provisional Result Requests</h3>
+  <div class="table-responsive">
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Student Name</th>
+          <th>Matriculation No.</th>
+          <th>Address</th>
+          <th>Contact</th>
+          <th>Admission Year</th>
+          <th>Study Year</th>
+          <th>Programme</th>
+          <th>Semester</th>
+          <th>Submitted</th>
+          <th>Verified</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let req of provisionalRequests" (click)="req.user ? viewFinancialDetails(financialDetailModal, req.user.id, req.user.first_name + ' ' + req.user.last_name) : null" style="cursor: pointer;">
+          <td>{{ req.id }}</td>
+          <td>{{ req.user ? (req.user.first_name + ' ' + req.user.last_name) : 'N/A' }}</td>
+          <td>{{ req.user ? req.user.username : 'N/A' }}</td>
+          <td>{{ req.current_address }}</td>
+          <td>{{ req.email_or_phone }}</td>
+          <td>{{ req.year_of_admission }}</td>
+          <td>{{ req.year_of_study }}</td>
+          <td>{{ req.programme }}</td>
+          <td>{{ req.semester_range }}</td>
+          <td>{{ formatDate(req.submitted_at) }}</td>
+          <td><span [ngClass]="{'badge bg-success': req.bursar_verified, 'badge bg-danger': !req.bursar_verified}">{{ req.bursar_verified ? 'Yes' : 'No' }}</span></td>
+          <td>
+            <button class="btn btn-success btn-sm" [disabled]="req.bursar_verified" (click)="verifyRequest('provisional', req.id); $event.stopPropagation()">Verify</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>
+
+<ng-template #financialDetailModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Financial Details for {{ selectedStudentName }}</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <div *ngIf="selectedStudentFinancials">
+      <h5>Tuition Fee Records</h5>
+      <table class="table table-sm" *ngIf="selectedStudentFinancials.payment_records.length > 0; else noTuition">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Reference</th>
+            <th>Fee</th>
+            <th>Payment</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let record of selectedStudentFinancials.payment_records">
+            <td>{{ record.date | date:'shortDate' }}</td>
+            <td>{{ record.payment_type }}</td>
+            <td>{{ record.reference_no }}</td>
+            <td>{{ record.fee | currency:'USD' }}</td>
+            <td>{{ record.payment | currency:'USD' }}</td>
+            <td>{{ record.balance | currency:'USD' }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <ng-template #noTuition><p>No tuition payment records found.</p></ng-template>
+
+      <h5 class="mt-4">Other Payment Records</h5>
+      <table class="table table-sm" *ngIf="selectedStudentFinancials.other_payment_records.length > 0; else noOther">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Reference</th>
+            <th>Fee</th>
+            <th>Payment</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let record of selectedStudentFinancials.other_payment_records">
+            <td>{{ record.date | date:'shortDate' }}</td>
+            <td>{{ record.payment_type }}</td>
+            <td>{{ record.reference_no }}</td>
+            <td>{{ record.fee | currency:'USD' }}</td>
+            <td>{{ record.payment | currency:'USD' }}</td>
+            <td>{{ record.balance | currency:'USD' }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <ng-template #noOther><p>No other payment records found.</p></ng-template>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-dark" (click)="modal.close('Save click')">Close</button>
+  </div>
+</ng-template>
