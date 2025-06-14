@@ -1,16 +1,59 @@
 .finger-icon-wrapper {
-  font-size: 64px;
-  color: #6c757d;
   transition: all 0.3s ease;
+  transform-origin: center;
 }
-
-.finger-icon-wrapper.success {
-  color: #198754; /* Bootstrap green */
-}
-
 
 .finger-icon-wrapper i {
   font-size: 5rem;
-  color: #0d6efd;
-
+  color: #0d6efd; /* Bootstrap primary blue */
+  transition: all 0.3s ease;
 }
+
+/* Success state - when fingerprint is captured */
+.finger-icon-wrapper.success i {
+  color: #198754; /* Bootstrap green */
+  transform: scale(1.1);
+}
+
+/* Scanning state - animated pulse effect */
+.finger-icon-wrapper.scanning i {
+  color: #fd7e14; /* Bootstrap orange */
+  animation: pulse-fingerprint 1.5s infinite;
+}
+
+/* Error state */
+.finger-icon-wrapper.error i {
+  color: #dc3545; /* Bootstrap red */
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Pulse animation for scanning */
+@keyframes pulse-fingerprint {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Shake animation for error */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Hover effect when not scanning */
+.finger-icon-wrapper:not(.scanning):not(.success):not(.error):hover i {
+  color: #0b5ed7;
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
