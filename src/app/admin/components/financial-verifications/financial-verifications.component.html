@@ -1,100 +1,92 @@
 <div class="container mt-5">
-    <!-- Panel for Pending Financial Verifications -->
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <h3 class="panel-title">Pending Financial Verifications</h3>
-        </div>
-        <div class="panel-body">
-            <!-- Responsive Table for Pending Verifications -->
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Request ID</th>
-                            <th>Student Name</th>
-                            <th>Matriculation Number</th>
-                            <th>Amount Due</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Loop through your data here -->
-                        <tr>
-                            <td>1</td>
-                            <td>MLAWA Shonde</td>
-                            <td>mlawa</td>
-                            <td>1500</td>  <!-- Replace with the actual amount due -->
-                            <td>
-                                <button class="btn btn-success btn-sm " onclick="verifyRequest(1)">Verify</button>
-                                <button class="btn btn-danger btn-sm" onclick="rejectRequest(1)">Reject</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>ALBANUS NJAU</td>
-                            <td>T22-03-00941</td>
-                            <td>2000</td>  <!-- Replace with the actual amount due -->
-                            <td>
-                                <button class="btn btn-success btn-sm" onclick="verifyRequest(2)">Verify</button>
-                                <button class="btn btn-danger btn-sm" onclick="rejectRequest(2)">Reject</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>6</td>
-                            <td>ADMIN Admin</td>
-                            <td>udom</td>
-                            <td>3000</td>  <!-- Replace with the actual amount due -->
-                            <td>
-                                <button class="btn btn-success btn-sm" onclick="verifyRequest(6)">Verify</button>
-                                <button class="btn btn-danger btn-sm" onclick="rejectRequest(6)">Reject</button>
-                            </td>
-                        </tr>
-                        <!-- Additional rows for other pending verifications -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
+  <!-- Panel for Pending Financial Verifications -->
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">Pending Financial Verifications</h3>
     </div>
-
-    <!-- Panel for Verified Financial Records -->
-    <div class="panel panel-default mt-4">
-        <div class="panel-heading">
-            <h3 class="panel-title">Verified Financial Records</h3>
-        </div>
-        <div class="panel-body">
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Request ID</th>
-                            <th>Student Name</th>
-                            <th>Verification Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Example for Verified Record -->
-                        <tr>
-                            <td>1</td>
-                            <td>Jane Smith</td>
-                            <td>2025-05-10</td>
-                        </tr>
-
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <div class="panel-body">
+      <!-- Responsive Table for Pending Verifications -->
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Request ID</th>
+              <th>Student Name</th>
+              <th>Matriculation Number</th>
+              <th>Amount Due</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let req of pendingTranscriptRequests">
+              <td>{{ req.id }}</td>
+              <td>{{ req.user.first_name }} {{ req.user.last_name }}</td>
+              <td>{{ req.user.username }}</td>
+              <td><!-- TODO: Add amount due --></td>
+              <td>
+                <button class="btn btn-primary btn-sm" (click)="openModal('transcript', req)">View</button>
+              </td>
+            </tr>
+            <tr *ngFor="let req of pendingProvisionalRequests">
+              <td>{{ req.id }}</td>
+              <td>{{ req.user.first_name }} {{ req.user.last_name }}</td>
+              <td>{{ req.user.username }}</td>
+              <td><!-- TODO: Add amount due --></td>
+              <td>
+                <button class="btn btn-primary btn-sm" (click)="openModal('provisional', req)">View</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
+  </div>
+
+  <!-- Modal for Financial Details -->
+  <div class="modal" tabindex="-1" [ngClass]="{'show d-block': showModal}" role="dialog" aria-labelledby="financialDetailsModalLabel" aria-hidden="!showModal">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content" *ngIf="selectedRequest">
+        <div class="modal-header">
+          <h5 class="modal-title" id="financialDetailsModalLabel">Financial Details for {{ selectedRequest.user.first_name }} {{ selectedRequest.user.last_name }}</h5>
+          <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
+        </div>
+        <div class="modal-body">
+          <h6>Transcript/Provisional Request Details</h6>
+          <p><strong>Request ID:</strong> {{ selectedRequest.id }}</p>
+          <p><strong>Submitted At:</strong> {{ formatDate(selectedRequest.submitted_at) }}</p>
+          <p><strong>Bursar Verified:</strong> {{ selectedRequest.bursar_verified ? 'Yes' : 'No' }}</p>
+
+          <h6>Payment Records</h6>
+          <table class="table table-bordered table-sm">
+            <thead>
+              <tr>
+                <th>Payment Type</th>
+                <th>Amount</th>
+                <th>Date Paid</th>
+                <th>Receipt Number</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let payment of selectedRequest.payment_records">
+                <td>{{ payment.payment_type }}</td>
+                <td>{{ payment.amount }}</td>
+                <td>{{ formatDate(payment.date_paid) }}</td>
+                <td>{{ payment.receipt_number }}</td>
+              </tr>
+              <tr *ngFor="let otherPayment of selectedRequest.other_payment_records">
+                <td>{{ otherPayment.payment_type }}</td>
+                <td>{{ otherPayment.amount }}</td>
+                <td>{{ formatDate(otherPayment.date_paid) }}</td>
+                <td>{{ otherPayment.receipt_number }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success" (click)="verifySelectedRequest()">Verify</button>
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-
-<!-- JavaScript functions for handling actions -->
-<script>
-    function verifyRequest(requestId) {
-        alert('Request ID ' + requestId + ' has been verified!');
-        // Logic to move data to the Verified section
-    }
-
-    function rejectRequest(requestId) {
-        alert('Request ID ' + requestId + ' has been rejected!');
-        // Logic to remove the rejected request
-    }
-</script>
