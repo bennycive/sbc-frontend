@@ -6,6 +6,7 @@ import { catchError, forkJoin, map, of } from 'rxjs';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+
 // Interface for Certificate data
 interface Certificate {
   id: number;
@@ -23,6 +24,7 @@ interface StudentProfile {
   user: number;
   registration_number?: string;
   phone_number?: string;
+  program_name?: string; // Expecting program name from the backend profile
 }
 
 @Component({
@@ -54,10 +56,6 @@ export class ExamOfficerVerifyComponent implements OnInit {
     transcriptCertificateRequests: `${this.API_BASE_URL}transcript-certificate-requests/`,
     provisionalRequests: `${this.API_BASE_URL}provisional-requests/`,
     profiles: `${this.API_BASE_URL}profiles/`,
-    academicRecords: `${this.API_BASE_URL}academic-records/`,
-    paymentRecords: `${this.API_BASE_URL}payment-records/`,
-    otherPaymentRecords: `${this.API_BASE_URL}other-payment-records/`,
-    certificates: `${this.API_BASE_URL}certificates/`,
   };
 
   constructor(private http: HttpClient) { }
@@ -67,33 +65,22 @@ export class ExamOfficerVerifyComponent implements OnInit {
     this.fetchRecords();
   }
 
-  /**
-   * Shows a SweetAlert2 notification.
-   */
   private showSwal(title: string, text: string, icon: 'success' | 'error' | 'warning' | 'info', timer?: number) {
     import('sweetalert2').then(Swal => {
-      Swal.default.fire({
-        icon: icon,
-        title: title,
-        text: text,
-        timer: timer,
-        showConfirmButton: !timer
-      });
+      Swal.default.fire({ icon, title, text, timer, showConfirmButton: !timer });
     });
   }
 
-  /**
-   * Fetches all relevant verification requests.
-   */
   fetchRecords() {
     this.records = [];
     const mapItemToRecord = (item: any, type: string) => ({
       ...item,
       request_type: type,
       student_name: `${item.user?.first_name || item.user_first_name || ''} ${item.user?.last_name || item.user_last_name || ''}`.trim() || 'N/A',
-      program: item.programme || item.user_program || 'N/A',
+      program: item.user?.profile?.program || item.programme || item.user_program || 'N/A',
       submitted_at: new Date(item.submitted_at),
       user_id: item.user?.id || item.user,
+      exam_officer_verified: !!item.exam_officer_approved,
     });
 
     forkJoin({
@@ -102,37 +89,16 @@ export class ExamOfficerVerifyComponent implements OnInit {
     }).subscribe(({ transcripts, provisionals }) => {
       this.records = [...transcripts, ...provisionals];
       this.updateSummary();
-      this.calculateCertificatesRequestedPerYear();
       this.applyFilter();
     });
   }
 
-  /**
-   * Updates the summary cards.
-   */
   updateSummary() {
     this.totalRequests = this.records.length;
     this.verifiedRequests = this.records.filter(r => this.isRequestComplete(r)).length;
     this.pendingRequests = this.totalRequests - this.verifiedRequests;
   }
 
-  /**
-   * Calculates requests per year for the chart.
-   */
-  calculateCertificatesRequestedPerYear() {
-    const yearCounts: { [year: number]: number } = {};
-    this.records.forEach(record => {
-      const year = new Date(record.submitted_at).getFullYear();
-      if(year) yearCounts[year] = (yearCounts[year] || 0) + 1;
-    });
-    this.certificatesRequestedPerYear = Object.keys(yearCounts)
-      .map(year => ({ year: Number(year), count: yearCounts[Number(year)] }))
-      .sort((a, b) => b.year - a.year);
-  }
-
-  /**
-   * Applies date and quick filters.
-   */
   applyFilter(): void {
     let tempRecords = [...this.records];
     if (this.filterOption !== 'all') {
@@ -163,9 +129,6 @@ export class ExamOfficerVerifyComponent implements OnInit {
     this.applyFilter();
   }
 
-  /**
-   * Selects a record and fetches its details.
-   */
   selectRecord(selectedRequest: any) {
     this.record = {
       ...selectedRequest,
@@ -177,17 +140,16 @@ export class ExamOfficerVerifyComponent implements OnInit {
       this.showSwal('Error', 'Student User ID not found.', 'error');
       return;
     }
-    this.http.get<StudentProfile[]>(`${this.apiEndpoints.profiles}?user=${studentUserId}`).pipe(
-      map(profiles => profiles.length > 0 ? profiles[0] : null)
-    ).subscribe(profile => {
+    this.http.get<StudentProfile>(`${this.apiEndpoints.profiles}${studentUserId}/`).subscribe(profile => {
       this.record.fullProfile = profile;
+       if(profile.program_name && this.record.studentDetails){
+          this.record.studentDetails.program = profile.program_name;
+      }
     });
   }
 
-  /**
-   * Handles verification for any role.
-   */
-  verify(verificationRole: 'exam_officer') {
+  // The 'role' parameter is optional to match the template call.
+  verify(role?: 'exam_officer') {
     if (!this.record) return;
     const roleInfo = { prop: 'exam_officer_verified', name: 'Exam Officer' };
 
@@ -201,14 +163,17 @@ export class ExamOfficerVerifyComponent implements OnInit {
     }
 
     const apiEndpoint = this.record.request_type === 'provisional' ? `${this.apiEndpoints.provisionalRequests}${this.record.id}/` : `${this.apiEndpoints.transcriptCertificateRequests}${this.record.id}/`;
-    const payload = { [roleInfo.prop]: true };
+    const payload = { exam_officer_approved: true };
 
     this.http.patch(apiEndpoint, payload).subscribe({
       next: () => {
         this.showSwal('Success', `${roleInfo.name} verification successful.`, 'success', 2000);
         this.record[roleInfo.prop] = true;
         const index = this.records.findIndex(r => r.id === this.record.id && r.request_type === this.record.request_type);
-        if (index > -1) this.records[index][roleInfo.prop] = true;
+        if (index > -1) {
+            this.records[index][roleInfo.prop] = true;
+        }
+
         this.updateSummary();
         this.applyFilter();
       },
@@ -216,36 +181,27 @@ export class ExamOfficerVerifyComponent implements OnInit {
     });
   }
 
-  /**
-   * Generates a PDF report of filtered records.
-   */
   generatePdfReport() {
-
-
     if (this.filteredRecords.length === 0) {
-      this.showSwal('Info', 'No data available for the current filter to generate a report.', 'info');
+      this.showSwal('Info', 'No data to generate a report.', 'info');
       return;
     }
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
-    const logoPath = 'assets/logo/udom_logo2.png';
-    
-    // Add Header
+     const logoPath = 'assets/logo/udom_logo2.png';
+    doc.addImage(logoPath, 'PNG', 15, 10, 30, 30);
     doc.setFont('times', 'bold');
     doc.setFontSize(16);
     doc.text('THE UNIVERSITY OF DODOMA', pageWidth / 2, 20, { align: 'center' });
     doc.setFontSize(12);
     doc.text('CERTIFICATE REQUESTS REPORT', pageWidth / 2, 28, { align: 'center' });
-
-    // Add Generated Time
     doc.setFont('times', 'italic');
     doc.setFontSize(9);
     doc.setTextColor(100);
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth - 15, 38, { align: 'right' });
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth - 15, 45, { align: 'right' });
 
-    // Add Table
     autoTable(doc, {
-      startY: 42,
+      startY: 50,
       head: [['#', 'Student Name', 'Program', 'Request Type', 'Submitted', 'Status']],
       body: this.filteredRecords.map((r, i) => [
         i + 1,
@@ -260,7 +216,7 @@ export class ExamOfficerVerifyComponent implements OnInit {
       headStyles: { fillColor: [2, 37, 72], textColor: [255, 255, 255], fontStyle: 'bold' },
     });
 
-    // Add Footer
+
     const pageCount = (doc as any).internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
@@ -270,25 +226,19 @@ export class ExamOfficerVerifyComponent implements OnInit {
     }
 
     doc.save(`requests_report_${new Date().toISOString().slice(0, 10)}.pdf`);
-    this.showSwal('Success', 'Your PDF report has been generated successfully!', 'success');
+    this.showSwal('Success', 'PDF report generated successfully!', 'success');
   }
 
-  /**
-   * Simulates capturing biometric data.
-   */
   captureBiometric() {
     import('sweetalert2').then(Swal => {
       Swal.default.fire({
         title: 'Capturing Biometric Data',
         html: `Please ask <strong>${this.record.student_name}</strong> to place their finger on the scanner.`,
         timer: 2500,
-        didOpen: () => {
-          Swal.default.showLoading();
-        },
+        didOpen: () => { Swal.default.showLoading(); },
       }).then((result) => {
         if (result.dismiss === Swal.default.DismissReason.timer) {
-          // Simulate a random success or failure
-          if (Math.random() > 0.1) { // 90% success rate
+          if (Math.random() > 0.1) {
              this.showSwal('Success!', 'Biometric data captured successfully.', 'success');
           } else {
              this.showSwal('Capture Failed', 'Could not verify biometric data. Please try again.', 'error');
@@ -300,10 +250,9 @@ export class ExamOfficerVerifyComponent implements OnInit {
 
   printCertificate() {
     this.showSwal('Info', `Generating ${this.record.studentDetails?.request_type} for ${this.record.student_name}...`, 'info', 2000);
-    // Add actual download link logic here if available
   }
 
-  isRequestComplete = (r: any) => r?.hod_verified && r?.bursar_verified && r?.exam_officer_verified;
+  isRequestComplete = (r: any) => !!r?.hod_verified && !!r?.bursar_verified && !!r?.exam_officer_verified;
 
   getRequestStatus = (r: any) => {
     if (this.isRequestComplete(r)) return { text: 'Complete', class: 'bg-success' };
@@ -311,5 +260,4 @@ export class ExamOfficerVerifyComponent implements OnInit {
     if (r.hod_verified) return { text: 'Pending Bursar', class: 'bg-primary' };
     return { text: 'Pending HOD', class: 'bg-warning text-dark' };
   };
-
 }

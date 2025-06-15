@@ -80,15 +80,15 @@
             <th>Type</th>
             <th>Submitted</th>
             <th>Status</th>
-            <th *ngIf="role !== 'exam_officer'">Action</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngIf="filteredRecords.length === 0">
-            <td [attr.colspan]="role !== 'exam_officer' ? 7 : 6" class="text-center">No records found.</td>
+            <td colspan="7" class="text-center">No records found.</td>
           </tr>
-          <tr *ngFor="let r of filteredRecords; let i = index" [class.table-row-clickable]="true"
-            (click)="selectRecord(r)">
+          <!-- Updated table row with View button -->
+          <tr *ngFor="let r of filteredRecords; let i = index">
             <td>{{ i + 1 }}</td>
             <td>{{ r.student_name }}</td>
             <td>{{ r.program }}</td>
@@ -99,7 +99,7 @@
                 {{ getRequestStatus(r).text }}
               </span>
             </td>
-            <td *ngIf="role !== 'exam_officer'">
+            <td>
               <button class="btn btn-sm btn-outline-primary" (click)="selectRecord(r)">
                 <i class="bi bi-eye"></i> View
               </button>

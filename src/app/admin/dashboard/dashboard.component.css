@@ -1,11 +1,22 @@
+/* Table Header Styling */
+.table thead th {
+  background-color: #022548;
+  color: white;
+  border-bottom: 2px solid #022548;
+  font-weight: 600;
+}
+
+/* Card Titles */
 .card-title {
   font-size: 1rem;
   font-weight: 600;
 }
+
 .card-text {
   font-weight: bold;
 }
 
+/* Summary Cards */
 .summary-card {
   transition: all 0.3s ease;
   border: 1px solid #e0e0e0;
@@ -15,8 +26,15 @@
 
 .summary-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.05);
-  border-color: #007bff;
+  box-shadow: 0 0.75rem 1.5rem rgba(2, 37, 72, 0.15);
+  border-color: #022548;
 }
 
-
+/* Card Headers */
+.card-header {
+  background-color: #022548;
+  color: white;
+  font-weight: 600;
+  border-bottom: 1px solid #022548;
+  
+}

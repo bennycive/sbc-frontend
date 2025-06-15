@@ -1,39 +1,680 @@
-.card-header {
-  background-color: #022548; /* Maintained from original */
-  color: #ffffff !important;   /* Maintained from original */
+/* Student Records Verification - External CSS */
+
+/* Main Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.table-head { /* You had .table-head, ensure it's used or use the standard thead styling */
-  background-color: #e9ecef; /* Light grey for table header */
+/* Page Title */
+.container h2 {
+  color: #022548;
+  font-weight: 600;
+  margin-bottom: 25px;
+  border-bottom: 3px solid #022548;
+  padding-bottom: 10px;
 }
 
+/* Filter Card */
+.card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card p-3 {
+  padding: 20px;
+}
+
+/* Form Elements */
+.form-label {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.form-select,
+.form-control {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 14px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-select:focus,
+.form-control:focus {
+  border-color: #022548;
+  box-shadow: 0 0 0 0.2rem rgba(2, 37, 72, 0.25);
+  outline: none;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-outline-secondary {
+  color: #6c757d;
+  border: 1px solid #6c757d;
+  background-color: transparent;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-primary {
+  background-color: #022548;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #034568;
+  transform: translateY(-1px);
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+}
+
+.btn-success:disabled {
+  background-color: #94d3a2;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-info {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.btn-info:hover {
+  background-color: #138496;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #545b62;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.btn-outline-primary {
+  color: #022548;
+  border: 1px solid #022548;
+  background-color: transparent;
+}
+
+.btn-outline-primary:hover {
+  background-color: #022548;
+  color: white;
+}
+
+/* Summary Cards */
+.row.text-center .card {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: none;
+  transition: transform 0.3s ease;
+}
+
+.row.text-center .card:hover {
+  transform: translateY(-5px);
+}
+
+.row.text-center .card i {
+  margin-bottom: 10px;
+}
+
+.row.text-center .card h5 {
+  color: #495057;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.row.text-center .card h3 {
+  color: #022548;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Certificates Per Year Card */
+.card-body {
+  padding: 20px;
+}
+
+.list-group-flush {
+  border-radius: 0;
+}
+
+.list-group-flush .list-group-item {
+  border-left: 0;
+  border-right: 0;
+  border-radius: 0;
+  padding: 12px 0;
+}
+
+.list-group-flush .list-group-item:first-child {
+  border-top: 0;
+}
+
+.list-group-flush .list-group-item:last-child {
+  border-bottom: 0;
+}
+
+.badge.bg-primary {
+  background-color: #022548 !important;
+}
+
+.badge.rounded-pill {
+  border-radius: 50rem !important;
+}
+
+/* Table Styles */
+.table-responsive {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table {
+  margin-bottom: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table-head {
+  background-color: #022548 !important;
+  color: white !important;
+}
+
+.table-head th {
+  background-color: #022548 !important;
+  color: white !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  padding: 15px 12px;
+  border: none;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.table td {
+  padding: 12px;
+  vertical-align: middle;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Clickable rows for exam officer */
 .table-row-clickable {
   cursor: pointer;
 }
 
 .table-row-clickable:hover {
-  background-color: #f8f9fa; /* Slight hover effect for clickable rows */
+  background-color: #e3f2fd !important;
+  transform: scale(1.01);
+  transition: all 0.2s ease;
 }
 
-/* Styling for verification progress items */
-.list-group-item-success {
-  border-left: 5px solid #198754; /* Green border for success */
+/* Status Badges */
+.badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
-.list-group-item-danger { /* If you want to highlight incomplete critical steps */
-  border-left: 5px solid #dc3545; /* Red border for danger/incomplete */
+
+.badge.bg-success {
+  background-color: #28a745 !important;
+  color: white;
 }
+
+.badge.bg-warning {
+  background-color: #ffc107 !important;
+  color: #212529;
+}
+
+.badge.bg-danger {
+  background-color: #dc3545 !important;
+  color: white;
+}
+
+.badge.bg-info {
+  background-color: #17a2b8 !important;
+  color: white;
+}
+
+/* Detailed Record View */
+.card h4 {
+  color: #022548;
+  font-weight: 600;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 10px;
+}
+
+.card h5 {
+  color: #022548;
+  font-weight: 500;
+  margin-bottom: 15px;
+}
+
+.card p {
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+.card p strong {
+  color: #495057;
+  font-weight: 600;
+}
+
+/* Alert Styles */
+.alert {
+  border-radius: 8px;
+  border: none;
+  padding: 15px 20px;
+}
+
+.alert-secondary {
+  background-color: #f8f9fa;
+  border-left: 4px solid #6c757d;
+}
+
+/* Text Colors */
+.text-success {
+  color: #28a745 !important;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}
+
+.text-warning {
+  color: #856404 !important;
+}
+
+.text-info {
+  color: #0c5460 !important;
+}
+
+.text-muted {
+  color: #6c757d !important;
+}
+
+/* List Group */
+.list-group {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
 .list-group-item {
-    border-left: 5px solid #ffc107; /* Yellow/warning border for pending by default */
+  border: 1px solid #dee2e6;
+  padding: 15px 20px;
+  background-color: #fff;
+  transition: background-color 0.3s ease;
 }
 
-/* Ensure icons are vertically aligned with text if needed */
+.list-group-item:first-child {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.list-group-item:last-child {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.list-group-item-success {
+  background-color: #d4edda !important;
+  border-color: #c3e6cb !important;
+}
+
+.list-group-item-danger {
+  background-color: #f8d7da !important;
+  border-color: #f5c6cb !important;
+}
+
+/* Certificate attachments list */
+.list-group-item-action {
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+.list-group-item-action:hover {
+  background-color: #f8f9fa;
+  color: #022548;
+  text-decoration: none;
+}
+
+.list-group-item-action:focus {
+  background-color: #e3f2fd;
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(2, 37, 72, 0.25);
+}
+
+/* Icons */
 .bi {
-  vertical-align: middle;
-  margin-right: 0.25rem;
+  margin-right: 5px;
 }
 
-.btn .bi { /* For icons inside buttons */
-    margin-right: 0.35rem;
+.fs-3 {
+  font-size: 2rem;
 }
 
+/* Card Headers */
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  padding: 15px 20px;
+}
 
+.card-header h5 {
+  margin: 0;
+  color: #022548;
+  font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
+  }
+
+  .row.align-items-end .col-md-3 {
+    margin-bottom: 15px;
+  }
+
+  .btn {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .d-flex.align-items-center.mt-3 {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .table-responsive {
+    font-size: 14px;
+  }
+
+  .card p-4 {
+    padding: 20px 15px;
+  }
+}
+
+/* Small text helper */
+.small {
+  font-size: 0.875em;
+}
+
+/* Margin and padding utilities */
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 1rem; }
+.mt-4 { margin-top: 1.5rem; }
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+.me-2 { margin-right: 0.5rem; }
+.ms-2 { margin-left: 0.5rem; }
+
+/* Font weight utilities */
+.fw-bold { font-weight: 700 !important; }
+.fst-italic { font-style: italic !important; }
+
+/* Display block utility */
+.d-block { display: block; }
+
+/* Display utilities */
+.d-flex { display: flex; }
+.align-items-center { align-items: center; }
+.justify-content-between { justify-content: space-between; }
+.text-center { text-align: center; }
+
+/* Background utilities */
+.bg-light { background-color: #f8f9fa; }
+
+/* Shadow utilities */
+.shadow-sm { box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); }
+
+/* No records message */
+.table td[colspan="7"],
+.table td[colspan="6"] {
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+  padding: 40px;
+}
+
+/* Role-specific sections */
+.role-section {
+  border-left: 4px solid #022548;
+  padding-left: 20px;
+  margin: 20px 0;
+}
+
+/* Academic Records Lists */
+.card ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.card ul li {
+  padding: 8px 12px;
+  margin: 5px 0;
+  background-color: #f8f9fa;
+  border-left: 4px solid #022548;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.card ul li:hover {
+  background-color: #e9ecef;
+}
+
+/* Financial Records */
+.financial-year-item {
+  padding: 10px;
+  margin: 5px 0;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid #17a2b8;
+}
+
+/* Warning messages */
+.text-danger.fw-bold {
+  font-weight: 700 !important;
+  font-size: 1.1em;
+  padding: 10px;
+  background-color: #f8d7da;
+  border-radius: 6px;
+  border-left: 4px solid #dc3545;
+}
+
+/* Form text helper */
+.form-text {
+  font-size: 0.875em;
+  color: #6c757d;
+}
+
+/* Certificate file links */
+.certificate-link {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  margin: 8px 0;
+  background-color: #f8f9fa;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+}
+
+.certificate-link:hover {
+  background-color: #e9ecef;
+  border-color: #022548;
+  transform: translateX(5px);
+  text-decoration: none;
+  color: #022548;
+}
+
+/* Admin override button */
+.btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
+.btn-danger:disabled {
+  background-color: #f5c6cb;
+  border-color: #f5c6cb;
+  color: #721c24;
+  cursor: not-allowed;
+}
+
+/* Currency formatting */
+.currency-positive {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.currency-negative {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+/* Outstanding dues indicator */
+.outstanding-indicator {
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+/* Loading states */
+.loading-placeholder {
+  background-color: #f8f9fa;
+  padding: 20px;
+  text-align: center;
+  border-radius: 6px;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Verification status indicators */
+.verification-step {
+  position: relative;
+  padding-left: 30px;
+}
+
+.verification-step::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #6c757d;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px #6c757d;
+}
+
+.verification-step.completed::before {
+  background-color: #28a745;
+  box-shadow: 0 0 0 2px #28a745;
+}
+
+.verification-step.pending::before {
+  background-color: #ffc107;
+  box-shadow: 0 0 0 2px #ffc107;
+}
+
+/* Role-specific styling */
+.hod-section {
+  border-left-color: #28a745;
+}
+
+.bursar-section {
+  border-left-color: #ffc107;
+}
+
+.admin-section {
+  border-left-color: #dc3545;
+}
+
+.exam-officer-section {
+  border-left-color: #022548;
+}
+
+/* Loading and empty states */
+.text-center {
+  text-align: center;
+}
+
+/* Print styles */
+@media print {
+  .btn {
+    display: none !important;
+  }
+
+  .card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+
+}
