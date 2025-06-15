@@ -32,9 +32,10 @@
 
 /* Card Headers */
 .card-header {
-  background-color: #022548;
-  color: white;
+
+  color: black;
   font-weight: 600;
   border-bottom: 1px solid #022548;
-  
+
 }
+

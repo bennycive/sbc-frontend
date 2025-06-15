@@ -224,12 +224,12 @@
             Pending</span>
         </li>
         <li class="list-group-item d-flex justify-content-between align-items-center"
-          [class.list-group-item-success]="record?.exam_officer_verified"
-          [class.list-group-item-danger]="record && !record?.exam_officer_verified && (role === 'exam_officer' || role === 'admin') && record?.hod_verified && record?.bursar_verified">
+          [class.list-group-item-success]="record?.exam_officer_approved"
+          [class.list-group-item-danger]="record && !record?.exam_officer_approved && (role === 'exam_officer' || role === 'admin') && record?.hod_verified && record?.bursar_verified">
           Exam Officer Final Verification
-          <span *ngIf="record?.exam_officer_verified"><i class="bi bi-check-circle-fill text-success"></i>
+          <span *ngIf="record?.exam_officer_approved"><i class="bi bi-check-circle-fill text-success"></i>
             Verified</span>
-          <span *ngIf="record && !record?.exam_officer_verified"><i class="bi bi-hourglass-split text-warning"></i>
+          <span *ngIf="record && !record?.exam_officer_approved"><i class="bi bi-hourglass-split text-warning"></i>
             Pending</span>
         </li>
         <li class="list-group-item d-flex justify-content-between align-items-center"

@@ -1,11 +1,9 @@
 import { Component, OnInit, TemplateRef, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { DatePipe, CommonModule, CurrencyPipe } from '@angular/common';
-
-// Import NgbModal and other required members from ng-bootstrap
+import Swal from 'sweetalert2';
 import { NgbModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
-// --- Interfaces ---
 
 interface User {
   id: number;
@@ -30,12 +28,12 @@ interface FinancialRequest {
 }
 
 interface PaymentRecord {
-    date: string;
-    payment_type: string;
-    reference_no: string;
-    fee: number;
-    payment: number;
-    balance: number;
+  date: string;
+  payment_type: string;
+  reference_no: string;
+  fee: number;
+  payment: number;
+  balance: number;
 }
 
 interface FinancialDetails {
@@ -122,40 +120,67 @@ export class FinancialVerificationsComponent implements OnInit {
     });
   }
 
-  // Verify a request and update its status
-  // The event parameter is now optional to prevent compiler errors.
+
   verifyRequest(requestType: string, id: number, event?: MouseEvent) {
-    // Stop the click from propagating to the table row's click handler
     if (event) {
       event.stopPropagation();
     }
 
-    const url = `${this.baseUrl}financial-verifications/${requestType}/${id}/update-bursar/`;
-    this.http.post(url, { verified: true }).subscribe({
-      next: () => {
-        // Reload the data to reflect the change
-        this.loadAllRequests();
-      },
-      error: (err) => console.error('Failed to update bursar verification', err),
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'Do you want to mark this request as verified?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, verify it!',
+      cancelButtonText: 'No, cancel',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const url = `${this.baseUrl}financial-verifications/${requestType}/${id}/update-bursar/`;
+        this.http.post(url, { verified: true }).subscribe({
+          next: () => {
+            this.loadAllRequests();
+
+            Swal.fire({
+              icon: 'success',
+              title: 'Verified!',
+              text: 'The request has been successfully verified.',
+              timer: 2000,
+              showConfirmButton: false
+            });
+          },
+          error: (err) => {
+            console.error('Failed to update bursar verification', err);
+
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Failed to verify the request.',
+            });
+          },
+        });
+      }
     });
   }
+
+
+
 
   // Open a modal to show student's financial details
   viewFinancialDetails(content: TemplateRef<any>, studentId: number, studentName: string) {
     this.selectedStudentName = studentName;
     // Fetch financial details for the selected student
     this.http.get<FinancialDetails>(`${this.financialDetailsApiUrl}${studentId}/`).subscribe({
-        next: (data) => {
-            this.selectedStudentFinancials = data;
-            // Open the modal with the fetched data
-            this.modalService.open(content, { ariaLabelledBy: 'modal-basic-title', size: 'lg' });
-        },
-        error: (err) => {
-            console.error('Failed to load financial details', err);
-            // Even if fetching fails, you might want to open the modal with an error message.
-            this.selectedStudentFinancials = { payment_records: [], other_payment_records: [] };
-            this.modalService.open(content, { ariaLabelledBy: 'modal-basic-title', size: 'lg' });
-        }
+      next: (data) => {
+        this.selectedStudentFinancials = data;
+        // Open the modal with the fetched data
+        this.modalService.open(content, { ariaLabelledBy: 'modal-basic-title', size: 'lg' });
+      },
+      error: (err) => {
+        console.error('Failed to load financial details', err);
+        // Even if fetching fails, you might want to open the modal with an error message.
+        this.selectedStudentFinancials = { payment_records: [], other_payment_records: [] };
+        this.modalService.open(content, { ariaLabelledBy: 'modal-basic-title', size: 'lg' });
+      }
     });
   }
 
@@ -163,4 +188,7 @@ export class FinancialVerificationsComponent implements OnInit {
   formatDate(dateStr: string): string | null {
     return this.datePipe.transform(dateStr, 'medium');
   }
+
+  
+
 }
