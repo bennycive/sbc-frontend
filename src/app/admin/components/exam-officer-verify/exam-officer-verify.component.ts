@@ -246,6 +246,8 @@ export class ExamOfficerVerifyComponent implements OnInit {
         }
       });
     });
+
+    
   }
 
   printCertificate() {

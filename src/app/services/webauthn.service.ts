@@ -1,4 +1,3 @@
-
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -11,23 +10,27 @@ export class WebauthnService {
   constructor(private http: HttpClient) {}
 
   async register() {
-    // Step 1: Get public key options from server
-    const options: any = await firstValueFrom(this.http.get(`${environment.apiBaseUrl}/users/mfa/register/options/`));
+    const options: any = await firstValueFrom(
+      this.http.get(`${environment.apiBaseUrl}/users/mfa/register/options/`)
+    );
 
-    // Step 2: Create credential
     options.challenge = this._bufferDecode(options.challenge);
     options.user.id = this._bufferDecode(options.user.id);
 
-    const credential: PublicKeyCredential = await navigator.credentials.create({ publicKey: options }) as PublicKeyCredential;
+    const credential = await navigator.credentials.create({ publicKey: options }) as PublicKeyCredential;
 
-    // Step 3: Send credential to server
-    const credentialData = this._credentialToJSON(credential);
-    return this.http.post(`${environment.apiBaseUrl}/users/mfa/register/complete/`, credentialData).toPromise();
+    const credentialJSON = this._serializePublicKeyCredential(credential);
+    console.log('Registration payload:', credentialJSON);
 
+    return await firstValueFrom(
+      this.http.post(`${environment.apiBaseUrl}/users/mfa/register/complete/`, credentialJSON, { withCredentials: true })
+    );
   }
 
   async authenticate() {
-    const options: any = await firstValueFrom(this.http.get(`${environment.apiBaseUrl}/mfa/authenticate/options/`));
+    const options: any = await firstValueFrom(
+      this.http.get(`${environment.apiBaseUrl}/mfa/authenticate/options/`)
+    );
 
     options.challenge = this._bufferDecode(options.challenge);
     options.allowCredentials = options.allowCredentials.map((cred: any) => ({
@@ -37,37 +40,58 @@ export class WebauthnService {
 
     const assertion = await navigator.credentials.get({ publicKey: options }) as PublicKeyCredential;
 
-    const assertionData = this._credentialToJSON(assertion);
-    return this.http.post(`${environment.apiBaseUrl}/mfa/authenticate/complete/`, assertionData).toPromise();
+    const assertionJSON = this._serializePublicKeyCredential(assertion);
+    console.log('Authentication payload:', assertionJSON);
 
+    return await firstValueFrom(
+      this.http.post(`${environment.apiBaseUrl}/mfa/authenticate/complete/`, assertionJSON)
+    );
   }
-  
 
-  private _bufferDecode(value: string) {
+  private _bufferDecode(value: string): Uint8Array {
     return Uint8Array.from(atob(value), c => c.charCodeAt(0));
   }
 
-  private _credentialToJSON(pubKeyCred: any): any {
-    if (pubKeyCred instanceof Array) {
-      return pubKeyCred.map(i => this._credentialToJSON(i));
+  private _arrayBufferToBase64(buffer: ArrayBuffer): string {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  }
+
+  private _arrayBufferToBase64Url(buffer: ArrayBuffer): string {
+    const base64 = this._arrayBufferToBase64(buffer);
+    return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  /**
+   * Serializes PublicKeyCredential into a JSON-friendly format.
+   * Recursively handles ArrayBuffers and nested objects.
+   */
+  private _serializePublicKeyCredential(cred: any): any {
+    if (!cred) return cred;
+
+    if (cred instanceof ArrayBuffer) {
+      return this._arrayBufferToBase64Url(cred);
     }
 
-    if (pubKeyCred instanceof ArrayBuffer) {
-      return btoa(String.fromCharCode(...new Uint8Array(pubKeyCred)));
+    if (Array.isArray(cred)) {
+      return cred.map(item => this._serializePublicKeyCredential(item));
     }
 
-    if (pubKeyCred && typeof pubKeyCred === 'object') {
+    if (typeof cred === 'object') {
       const obj: any = {};
-      for (const key in pubKeyCred) {
-        obj[key] = this._credentialToJSON(pubKeyCred[key]);
+      for (const key in cred) {
+        if (cred.hasOwnProperty(key)) {
+          obj[key] = this._serializePublicKeyCredential(cred[key]);
+        }
       }
       return obj;
     }
 
-    return pubKeyCred;
-
-
+    return cred;
   }
-
-
 }
