@@ -27,8 +27,13 @@
       </a>
     </li>
 
-    <li *ngIf="currentUserRole === 'admin' || currentUserRole === 'hod' || currentUserRole === 'exam-officer'">
+    <li *ngIf="currentUserRole === 'admin' || currentUserRole === 'hod'">
       <a class="nav-link text-white" (click)="verifyRecords()">
+        <i class="bi bi-patch-check me-2"></i> Verify Records
+      </a>
+    </li>
+     <li *ngIf="currentUserRole === 'exam-officer'">
+      <a class="nav-link text-white" (click)="ExamOfficerverifyRecords()">
         <i class="bi bi-patch-check me-2"></i> Verify Records
       </a>
     </li>

@@ -271,7 +271,9 @@ generatePdfReport() {
     
   
     doc.save('user_report.pdf');
+
   }
 
 
+  
 }

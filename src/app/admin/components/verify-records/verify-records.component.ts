@@ -30,7 +30,7 @@ interface StudentProfile {
 })
 export class VerifyRecordsComponent implements OnInit {
 
-  role: string = 'exam_officer';
+  role: string = 'hod';
 
   records: any[] = [];
   filteredRecords: any[] = [];
@@ -66,147 +66,137 @@ export class VerifyRecordsComponent implements OnInit {
   constructor(private http: HttpClient) { }
 
   ngOnInit() {
-    this.role = localStorage.getItem('userRole') || 'exam_officer';
+    this.role = localStorage.getItem('userRole') || 'hod';
     this.fetchRecords();
   }
 
-  // fetchRecords() {
-  //   this.records = [];
-  //   const requestsToFetch: any[] = [];
+  verify(verificationRole: string) {
+    if (verificationRole !== 'hod') {
+      console.warn(`Verification for role '${verificationRole}' is disabled.`);
+      return;
+    }
+    // Implement HOD verification logic here
+    if (!this.record) {
+      import('sweetalert2').then(Swal => {
+        Swal.default.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No record selected for verification.',
+        });
+      });
+      return;
+    }
+    if (this.record.hod_verified) {
+      import('sweetalert2').then(Swal => {
+        Swal.default.fire({
+          icon: 'info',
+          title: 'Info',
+          text: 'Record already verified by HOD.',
+        });
+      });
+      return;
+    }
+    let apiEndpoint = '';
+    if (this.record.request_type === 'provisional') {
+      apiEndpoint = `${this.apiEndpoints.provisionalRequests}${this.record.id}/`;
+    } else {
+      apiEndpoint = `${this.apiEndpoints.transcriptCertificateRequests}${this.record.id}/`;
+    }
+    const payload = {
+      hod_verified: true,
+    };
+    this.http.patch(apiEndpoint, payload).subscribe({
+      next: (response: any) => {
+        import('sweetalert2').then(Swal => {
+          Swal.default.fire({
+            icon: 'success',
+            title: 'Success',
+            text: 'HOD verification successful.',
+            timer: 2000,
+            showConfirmButton: false,
+          });
+        });
+        this.record.hod_verified = true;
+        const index = this.records.findIndex(r => r.id === this.record.id && r.request_type === this.record.request_type);
+        if (index > -1) {
+          this.records[index].hod_verified = true;
+        }
+        this.applyFilter();
+        this.updateSummary();
+      },
+      error: (error) => {
+        console.error('HOD verification failed:', error);
+        import('sweetalert2').then(Swal => {
+          Swal.default.fire({
+            icon: 'error',
+            title: 'Error',
+            text: `Failed to verify record. Error: ${error.message || 'Server error'}.`,
+          });
+        });
+      }
+    });
+  }
 
-  //   if (this.role === 'hod' || this.role === 'exam_officer' || this.role === 'admin') {
-  //     requestsToFetch.push(
-  //       this.http.get<any[]>(this.apiEndpoints.transcriptCertificateRequests)
-  //         .pipe(
-  //           map(data => data.map(item => ({
-  //             ...item,
-  //             id: item.id,
-  //             request_type: item.request_type,
-  //             student_name: item.user.first_name + ' ' + item.user.last_name,
-  //             program: item.programme,
-  //             submitted_at: new Date(item.submitted_at),
-  //             hod_verified: item.hod_verified,
-  //             bursar_verified: item.bursar_verified,
-  //             exam_officer_verified: item.exam_officer_approved,
-  //             user_id: item.user
-  //           }))),
-  //           catchError(error => {
-  //             console.error('Error fetching transcript/certificate requests:', error);
-  //             return of([]);
-  //           })
-  //         )
-  //     );
 
-  //     requestsToFetch.push(
-  //       this.http.get<any[]>(this.apiEndpoints.provisionalRequests)
-  //         .pipe(
-  //           map(data => data.map(item => ({
-  //             ...item,
-  //             id: item.id,
-  //             request_type: 'provisional',
-  //             student_name: item.first_name + ' ' + item.last_name,
-  //             program: item.programme,
-  //             submitted_at: new Date(item.submitted_at),
-  //             hod_verified: item.hod_verified,
-  //             bursar_verified: item.bursar_verified,
-  //             exam_officer_verified: item.exam_officer_approved,
-  //             user_id: item.user
-  //           }))),
-  //           catchError(error => {
-  //             console.error('Error fetching provisional requests:', error);
-  //             return of([]);
-  //           })
-  //         )
-  //     );
-  //   }
-
-  //   if (requestsToFetch.length === 0 && (this.role === 'bursar')) {
-  //       requestsToFetch.push(
-  //         this.http.get<any[]>(this.apiEndpoints.transcriptCertificateRequests)
-  //           .pipe(map(data => data.map(item => ({ ...item, request_type: item.request_type, student_name: item.user_username, program: item.user_program, submitted_at: new Date(item.submitted_at), hod_verified: item.hod_verified, bursar_verified: item.bursar_verified, exam_officer_verified: item.exam_officer_approved, user_id: item.user }))), catchError(() => of([])))
-  //       );
-  //       requestsToFetch.push(
-  //         this.http.get<any[]>(this.apiEndpoints.provisionalRequests)
-  //           .pipe(map(data => data.map(item => ({ ...item, request_type: 'provisional', student_name: item.user_username, program: item.programme, submitted_at: new Date(item.submitted_at), hod_verified: item.hod_verified, bursar_verified: item.bursar_verified, exam_officer_verified: item.exam_officer_approved, user_id: item.user }))), catchError(() => of([])))
-  //       );
-  //   }
-
-  //   forkJoin(requestsToFetch).subscribe({
-  //     next: (allResponses: any[][]) => {
-  //       allResponses.forEach(responseArray => {
-  //         this.records.push(...responseArray);
-  //       });
-  //       this.records = this.records.filter((record, index, self) =>
-  //           index === self.findIndex((r) => (
-  //             r.id === record.id && r.request_type === record.request_type
-  //           ))
-  //       );
-  //       this.updateSummary();
-  //       this.calculateCertificatesRequestedPerYear();
-  //       this.applyFilter();
-  //     },
-  //     error: (error) => {
-  //       console.error('Error fetching combined records:', error);
-  //     }
-  //   });
-  // }
 
   fetchRecords() {
     this.records = [];
     const requestsToFetch: any[] = [];
 
     const mapItemToRecord = (item: any, requestTypeOverride?: string) => {
-    const user = item.user || {};
+      const user = item.user || {};
 
-    // Improved student name extraction with fallback to profile if available
-    let studentName = 'N/A';
-    if (user.first_name || user.last_name) {
-      studentName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
-    } else if (item.user_first_name || item.user_last_name) {
-      studentName = `${item.user_first_name || ''} ${item.user_last_name || ''}`.trim();
-    } else if (user.username) {
-      studentName = user.username;
-    } else if (item.user_username) {
-      studentName = item.user_username;
-    }
-
-    // Program extraction with fallback to profile department if available
-    let program = item.programme || item.user_program || user.program || user.department || 'N/A';
-    if (requestTypeOverride === 'provisional' && item.programme) {
-        program = item.programme;
-    }
-
-    // Determine status based on role and verification flags
-    let status = 'Pending';
-    if (this.role === 'hod') {
-      status = item.hod_verified ? 'Verified' : 'Pending';
-    } else if (this.role === 'bursar') {
-      status = item.bursar_verified ? 'Verified' : 'Pending';
-    } else if (this.role === 'exam_officer') {
-      status = item.exam_officer_approved ? 'Verified' : 'Pending';
-    } else if (this.role === 'admin') {
-      // Admin sees overall status
-      if (item.hod_verified && item.bursar_verified && item.exam_officer_approved) {
-        status = 'Verified';
-      } else {
-        status = 'Pending';
+      // Improved student name extraction with fallback to profile if available
+      let studentName = 'N/A';
+      if (user.first_name || user.last_name) {
+        studentName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+      } else if (item.user_first_name || item.user_last_name) {
+        studentName = `${item.user_first_name || ''} ${item.user_last_name || ''}`.trim();
+      } else if (user.username) {
+        studentName = user.username;
+      } else if (item.user_username) {
+        studentName = item.user_username;
       }
-    }
 
-    return {
-      ...item,
-      id: item.id,
-      request_type: requestTypeOverride || item.request_type,
-      student_name: studentName,
-      program: program,
-      submitted_at: this.isValidDate(item.submitted_at) ? new Date(item.submitted_at) : new Date(0),
-      hod_verified: item.hod_verified,
-      bursar_verified: item.bursar_verified,
-      exam_officer_verified: item.exam_officer_approved,
-      user_id: user.id || item.user,
-      status: status
+      // Program extraction with fallback to profile department if available
+      let program = item.programme || item.user_program || user.program || user.department || 'N/A';
+      if (requestTypeOverride === 'provisional' && item.programme) {
+        program = item.programme;
+      }
+
+      // Determine status based on role and verification flags
+      let status = 'Pending';
+      if (this.role === 'hod') {
+        status = item.hod_verified ? 'Verified' : 'Pending';
+      } else if (this.role === 'bursar') {
+        status = item.bursar_verified ? 'Verified' : 'Pending';
+      } else if (this.role === 'exam_officer') {
+        status = item.exam_officer_verified ? 'Verified' : 'Pending';
+      } else if (this.role === 'admin') {
+        // Admin sees overall status
+        if (item.hod_verified && item.bursar_verified && item.exam_officer_verified) {
+          status = 'Verified';
+        } else if (item.hod_verified || item.bursar_verified || item.exam_officer_verified) {
+          status = 'Partially Verified';
+        } else {
+          status = 'Pending';
+        }
+      }
+
+      return {
+        ...item,
+        id: item.id,
+        request_type: requestTypeOverride || item.request_type,
+        student_name: studentName,
+        program: program,
+        submitted_at: this.isValidDate(item.submitted_at) ? new Date(item.submitted_at) : new Date(0),
+        hod_verified: item.hod_verified,
+        bursar_verified: item.bursar_verified,
+        exam_officer_verified: item.exam_officer_verified,
+        user_id: user.id || item.user,
+        status: status
+      };
     };
-};
 
     if (this.role === 'hod' || this.role === 'exam_officer' || this.role === 'admin') {
       requestsToFetch.push(
@@ -267,9 +257,11 @@ export class VerifyRecordsComponent implements OnInit {
 
   updateSummary() {
     this.totalRequests = this.records.length;
-    this.verifiedRequests = this.records.filter(r => r.exam_officer_verified).length;
+    // Adjust verified count to count records verified by HOD (as example from financial-verifications)
+    this.verifiedRequests = this.records.filter(r => r.hod_verified).length;
     this.pendingRequests = this.totalRequests - this.verifiedRequests;
   }
+
 
   calculateCertificatesRequestedPerYear() {
     const yearCounts: { [year: number]: number } = {};
@@ -486,67 +478,6 @@ export class VerifyRecordsComponent implements OnInit {
   }
   // ****** END OF NEW HELPER FUNCTION ******
 
-  verify(verificationRole: string) {
-    console.log('Verify function called for role:', verificationRole);
-    if (!this.record || !this.record.id) {
-      console.warn('No record selected or record ID missing for verification.');
-      alert('Please select a record to verify.');
-      return;
-    }
-
-    let apiEndpoint = '';
-    let payload: any = {};
-
-    if (this.record.request_type === 'provisional') {
-      apiEndpoint = `${this.apiEndpoints.provisionalRequests}${this.record.id}/`;
-    } else if (this.record.request_type === 'transcript' || this.record.request_type === 'certificate') {
-      apiEndpoint = `${this.apiEndpoints.transcriptCertificateRequests}${this.record.id}/`;
-    } else {
-      console.error('Unknown request type for verification:', this.record.request_type);
-      alert('Cannot verify: Unknown request type.');
-      return;
-    }
-
-    if (verificationRole === 'hod') {
-      payload = { hod_verified: true };
-    } else if (verificationRole === 'bursar') {
-      payload = { bursar_verified: true };
-    } else if (verificationRole === 'exam_officer') {
-      payload = { exam_officer_approved: true };
-    } else {
-      console.error('Unknown verification role:', verificationRole);
-      return;
-    }
-
-    this.http.patch(apiEndpoint, payload)
-      .subscribe({
-        next: (response: any) => {
-          console.log(`${verificationRole} verification successful:`, response);
-          alert(`${verificationRole} verification successful!`);
-
-          if (verificationRole === 'hod') this.record.hod_verified = true;
-          if (verificationRole === 'bursar') this.record.bursar_verified = true;
-          if (verificationRole === 'exam_officer') this.record.exam_officer_verified = true;
-
-          const index = this.records.findIndex(r => r.id === this.record.id && r.request_type === this.record.request_type);
-          if (index > -1) {
-            if (verificationRole === 'hod') this.records[index].hod_verified = true;
-            if (verificationRole === 'bursar') this.records[index].bursar_verified = true;
-            if (verificationRole === 'exam_officer') this.records[index].exam_officer_verified = true; // This should be exam_officer_approved based on payload
-            // Ensure consistency if 'exam_officer_verified' is the local state variable
-            // and 'exam_officer_approved' is the API field.
-            // Here, assuming exam_officer_verified is the correct local state property.
-            this.applyFilter();
-            this.updateSummary();
-            this.calculateCertificatesRequestedPerYear();
-          }
-        },
-        error: (error) => {
-          console.error(`${verificationRole} verification failed:`, error);
-          alert(`Verification failed for ${verificationRole}. Error: ${error.message || 'Server error'}. Check console for details.`);
-        }
-      });
-  }
 
   printCertificate() {
     if (!this.record) {
@@ -623,47 +554,19 @@ export class VerifyRecordsComponent implements OnInit {
       });
   }
 
-  generateReport() {
-    if (this.filteredRecords.length === 0) {
-      alert("No records to generate a report for the current filter.");
-      return;
+
+  // Add this new function to the component class
+  getRequestStatus(record: any): { text: string; class: string } {
+    if (record.hod_verified && record.bursar_verified && record.exam_officer_verified) {
+      return { text: 'Complete', class: 'bg-success' };
     }
-
-    let csvContent = "data:text/csv;charset=utf-8,";
-    const headers = [
-      "ID", "Student Name", "Program", "Request Type", "Submitted At",
-      "HOD Verified", "Bursar Verified", "Exam Officer Verified"
-    ];
-    // For dynamic headers like registration number, you'd ideally fetch this data
-    // for all filtered records if it's not already part of the 'record' object in the list.
-    // The current logic for adding headers conditionally based on 'this.record' is flawed
-    // for a report of 'filteredRecords'.
-
-    csvContent += headers.join(",") + "\r\n";
-
-    this.filteredRecords.forEach(record => {
-      let row = [
-        record.id,
-        `"${record.student_name || ''}"`,
-        `"${record.program || ''}"`,
-        `"${record.request_type || ''}"`,
-        `"${this.isValidDate(record.submitted_at) ? new Date(record.submitted_at).toLocaleDateString() : 'Invalid Date'}"`,
-        record.hod_verified ? "Yes" : "No",
-        record.bursar_verified ? "Yes" : "No",
-        record.exam_officer_verified ? "Yes" : "No"
-        // Add data for conditionally added headers here, ensuring it comes from the 'record' in the loop
-      ];
-      csvContent += row.join(",") + "\r\n";
-    });
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `student_requests_report_${this.filterOption}_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    alert(`Report for ${this.filteredRecords.length} records generated successfully!`);
+    if (record.hod_verified && record.bursar_verified) {
+      return { text: 'Pending Exam Officer', class: 'bg-info text-dark' };
+    }
+    if (record.hod_verified) {
+      return { text: 'Pending Bursar', class: 'bg-primary' };
+    }
+    return { text: 'Pending HOD', class: 'bg-warning text-dark' };
   }
 
   isRequestComplete(record: any): boolean {

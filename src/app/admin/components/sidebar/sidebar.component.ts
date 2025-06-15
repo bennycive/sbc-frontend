@@ -75,6 +75,9 @@ export class SidebarComponent {
 
   }
 
+  ExamOfficerverifyRecords(){
+    this.router.navigate(['/dashbord/exam-officer-verify'])
+  }
 
   financiaRecords() {
     this.router.navigate(['/dashbord/financial-records'])

@@ -12,6 +12,7 @@ import { VerifyRecordsComponent } from './components/verify-records/verify-recor
 import { CollageComponent } from './components/collage/collage.component';
 import { FinancialRecordsComponent } from './components/financial-records/financial-records.component';
 import { ViewCertificatesComponent } from './components/view-certificates/view-certificates.component';
+import { ExamOfficerVerifyComponent } from './components/exam-officer-verify/exam-officer-verify.component';
 
 
 const routes: Routes = [
@@ -30,6 +31,7 @@ const routes: Routes = [
       { path: 'financial-records', component: FinancialRecordsComponent},
       { path: 'financial-verifications', component: FinancialVerificationsComponent},
       { path: 'verify-records', component: VerifyRecordsComponent},
+      { path: 'exam-officer-verify', component: ExamOfficerVerifyComponent},
       {
         path: 'collage', component:  CollageComponent
       },
