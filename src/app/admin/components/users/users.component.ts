@@ -33,7 +33,7 @@ export class UsersComponent {
   userForm: FormGroup;
   roles: string[] = ['student', 'admin', 'hod', 'bursar', 'exam-officer'];
   departments: string[] = ['ICT', 'CSE', 'ETE', 'IST'];
-  
+
   users: User[] = [];
   filteredUsers: User[] = [];
 
@@ -192,7 +192,7 @@ export class UsersComponent {
   }
 
 
-generatePdfReport() {
+  generatePdfReport() {
     const doc = new jsPDF();
 
     const logoPath = 'assets/logo/udom_logo2.png';
@@ -200,7 +200,7 @@ generatePdfReport() {
     const logoHeight = 30;
     // The logoPath variable from the import statement is used here
     doc.addImage(logoPath, 'PNG', 15, 10, logoWidth, logoHeight);
-    
+
 
     const pageWidth = doc.internal.pageSize.getWidth();
     doc.setFont('times', 'bold');
@@ -214,13 +214,13 @@ generatePdfReport() {
     doc.setFont('times', 'bold');
     doc.setFontSize(14);
     doc.text('USER REPORT', pageWidth / 2, 38, { align: 'center' });
-    
+
     // --- Add Generated Time ---
     const generatedTime = new Date().toLocaleString(); // e.g., "6/15/2025, 1:46:29 AM"
     doc.setFont('times', 'italic');
     doc.setFontSize(9);
-    doc.setTextColor(100); 
-    
+    doc.setTextColor(100);
+
     const reportMargin = 15;
     doc.text(`Generated on: ${generatedTime}`, pageWidth - reportMargin, 46, { align: 'right' });
 
@@ -253,10 +253,10 @@ generatePdfReport() {
     const pageHeight = doc.internal.pageSize.getHeight();
 
     for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i); 
+      doc.setPage(i);
 
       doc.setLineWidth(0.2);
-      doc.setDrawColor(150); 
+      doc.setDrawColor(150);
       doc.line(reportMargin, pageHeight - 16, pageWidth - reportMargin, pageHeight - 16);
       doc.line(reportMargin, pageHeight - 15, pageWidth - reportMargin, pageHeight - 15);
 
@@ -268,12 +268,12 @@ generatePdfReport() {
       const textWidth = doc.getTextWidth(text);
       doc.text(text, (pageWidth - textWidth) / 2, pageHeight - 10);
     }
-    
-  
+
+
     doc.save('user_report.pdf');
 
   }
 
 
-  
+
 }
