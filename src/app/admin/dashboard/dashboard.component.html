@@ -64,7 +64,7 @@
 
     <div *ngIf="currentUserRole === 'bursar'">
       <div class="row g-4 mb-4">
-        <div class="col-md-3" *ngFor="let card of bursarSummaryCards">
+        <div class="col-md-4" *ngFor="let card of bursarSummaryCards">
           <div class="card summary-card h-100 shadow-sm border-start">
             <div class="card-body">
               <h6><i [class]="card.icon + ' me-2 ' + (card.colorClass || 'text-primary')"></i>{{ card.title }}</h6>
@@ -74,30 +74,7 @@
         </div>
       </div>
 
-      <div class="card mb-4">
-        <div class="card-header">Verified Financial Records</div>
-        <div class="card-body p-0">
-          <table class="table table-sm table-hover">
-            <thead>
-              <tr>
-                <th>Student</th>
-                <th>Amount</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngIf="bursarVerifiedFinancials.length === 0">
-                <td colspan="3" class="text-center">No financial records verified.</td>
-              </tr>
-              <tr *ngFor="let record of bursarVerifiedFinancials">
-                <td>{{record.student}}</td>
-                <td>{{record.amount}}</td>
-                <td>{{record.date}}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+
     </div>
     <div *ngIf="currentUserRole === 'admin'">
       <div class="row g-4 mb-4">

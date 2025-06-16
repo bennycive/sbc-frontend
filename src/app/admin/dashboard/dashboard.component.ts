@@ -266,13 +266,12 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     const allRequests = requests.length;
     const pendingBursar = requests.filter(r => !r.bursar_verified).length;
     const completedByBursar = requests.filter(r => r.bursar_verified).length;
-    const rejectedByBursar = 0; // Placeholder, depends on API data
+    
 
     this.bursarSummaryCards = [
       { title: 'All Financial Requests', value: allRequests, icon: 'bi bi-envelope', colorClass: 'text-primary' },
       { title: 'Pending My Verification', value: pendingBursar, icon: 'bi bi-clock-history', colorClass: 'text-primary' },
       { title: 'Verified by Me', value: completedByBursar, icon: 'bi bi-check-circle', colorClass: 'text-primary' },
-      { title: 'Rejected by Me', value: rejectedByBursar, icon: 'bi bi-x-circle', colorClass: 'text-primary' }
     ];
 
     // Fetch bursar verified financials from existing endpoint
