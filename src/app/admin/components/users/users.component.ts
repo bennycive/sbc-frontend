@@ -73,6 +73,7 @@ export class UsersComponent {
   }
 
   checkPasswordStrength() {
+
     const password = this.f['password'].value;
     const strongRegex = new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=])[A-Za-z\\d!@#$%^&*()_+\\-=]{8,}$');
     const mediumRegex = new RegExp('^(((?=.*[a-z])(?=.*[A-Z]))|((?=.*[A-Z])(?=.*\\d))|((?=.*[a-z])(?=.*\\d)))[A-Za-z\\d!@#$%^&*()_+\\-=]{6,}$');
@@ -84,6 +85,7 @@ export class UsersComponent {
     } else {
       this.passwordStrength = 'Weak';
     }
+
   }
 
   passwordStrengthValidator(): ValidatorFn {
@@ -100,9 +102,12 @@ export class UsersComponent {
 
     if (this.selectedUserId) {
       this.updateUser(formData);
+
     } else {
       this.createUser(formData);
+      
     }
+
   }
 
   cleanFormData(data: any): any {
@@ -114,7 +119,7 @@ export class UsersComponent {
   }
 
   updateUser(data: any) {
-    this.http.put(`<span class="math-inline">\{environment\.apiBaseUrl\}/users/users/</span>{this.selectedUserId}/`, data).subscribe({
+    this.http.put(`${environment.apiBaseUrl}/users/users/${this.selectedUserId}/`, data).subscribe({
       next: () => {
         Swal.fire('Updated!', 'User updated successfully.', 'success');
         this.resetForm();

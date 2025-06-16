@@ -18,7 +18,7 @@
       </div>
     </div>
 
-  <div *ngIf="currentUserRole === 'student' || currentUserRole === 'exam-officer'">
+    <div *ngIf="currentUserRole === 'student' || currentUserRole === 'exam-officer'">
 
       <div class="row g-4 mb-4">
         <div class="col-md-4" *ngFor="let card of studentSummaryCards">
@@ -32,80 +32,96 @@
       </div>
     </div>
 
-  <div *ngIf="currentUserRole === 'hod'">
-   
-    <div class="card mb-4">
-      <div class="card-header">Transcript Requests for Verification</div>
-      <div class="card-body p-0">
-        <table class="table table-sm table-hover">
-          <thead>
-            <tr><th>Student</th><th>Course/Program</th><th>Request Type</th><th>Date</th></tr>
-          </thead>
-          <tbody>
-            <tr *ngIf="hodVerificationRequests.length === 0"><td colspan="4" class="text-center">No requests pending your verification.</td></tr>
-            <tr *ngFor="let r of hodVerificationRequests">
-              <td>{{r.student}}</td>
-              <td>{{r.course}}</td>
-              <td>{{r.request_type | titlecase}}</td>
-              <td>{{r.date}}</td>
-            </tr>
-          </tbody>
-        </table>
+    <div *ngIf="currentUserRole === 'hod'">
+
+      <div class="card mb-4">
+        <div class="card-header">Transcript Requests for Verification</div>
+        <div class="card-body p-0">
+          <table class="table table-sm table-hover">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Course/Program</th>
+                <th>Request Type</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="hodVerificationRequests.length === 0">
+                <td colspan="4" class="text-center">No requests pending your verification.</td>
+              </tr>
+              <tr *ngFor="let r of hodVerificationRequests">
+                <td>{{r.student}}</td>
+                <td>{{r.course}}</td>
+                <td>{{r.request_type | titlecase}}</td>
+                <td>{{r.date}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
+
+    <div *ngIf="currentUserRole === 'bursar'">
+      <div class="row g-4 mb-4">
+        <div class="col-md-3" *ngFor="let card of bursarSummaryCards">
+          <div class="card summary-card h-100 shadow-sm border-start">
+            <div class="card-body">
+              <h6><i [class]="card.icon + ' me-2 ' + (card.colorClass || 'text-primary')"></i>{{ card.title }}</h6>
+              <p class="fs-5 fw-bold mb-0">{{ card.value }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header">Verified Financial Records</div>
+        <div class="card-body p-0">
+          <table class="table table-sm table-hover">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Amount</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="bursarVerifiedFinancials.length === 0">
+                <td colspan="3" class="text-center">No financial records verified.</td>
+              </tr>
+              <tr *ngFor="let record of bursarVerifiedFinancials">
+                <td>{{record.student}}</td>
+                <td>{{record.amount}}</td>
+                <td>{{record.date}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="currentUserRole === 'admin'">
+      <div class="row g-4 mb-4">
+        <div class="col-md-4" *ngFor="let card of adminHodLikeCards">
+          <div class="card summary-card h-100 shadow-sm">
+            <div class="card-body">
+              <h5><i [class]="card.icon + ' me-2 ' + (card.colorClass || 'text-success')"></i>{{ card.title }}</h5>
+              <p class="fs-5 fw-semibold">{{ card.value }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4 mb-4">
+        <div class="col-md-3" *ngFor="let card of adminBursarLikeCards">
+          <div class="card summary-card h-100 shadow-sm border-start">
+            <div class="card-body">
+              <h6><i [class]="card.icon + ' me-2 ' + (card.colorClass || 'text-primary')"></i>{{ card.title }}</h6>
+              <p class="fs-5 fw-bold mb-0">{{ card.value }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
   </div>
-
-  <div *ngIf="currentUserRole === 'bursar'">
-    <div class="row g-4 mb-4">
-      <div class="col-md-3" *ngFor="let card of bursarSummaryCards">
-        <div class="card summary-card h-100 shadow-sm border-start">
-          <div class="card-body">
-            <h6><i [class]="card.icon + ' me-2 ' + (card.colorClass || 'text-primary')"></i>{{ card.title }}</h6>
-            <p class="fs-5 fw-bold mb-0">{{ card.value }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card mb-4">
-      <div class="card-header">Verified Financial Records</div>
-      <div class="card-body p-0">
-        <table class="table table-sm table-hover">
-          <thead><tr><th>Student</th><th>Amount</th><th>Date</th></tr></thead>
-          <tbody>
-            <tr *ngIf="bursarVerifiedFinancials.length === 0"><td colspan="3" class="text-center">No financial records verified.</td></tr>
-            <tr *ngFor="let record of bursarVerifiedFinancials">
-              <td>{{record.student}}</td>
-              <td>{{record.amount}}</td> <td>{{record.date}}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-  <div *ngIf="currentUserRole === 'admin'">
-    <div class="row g-4 mb-4">
-      <div class="col-md-4" *ngFor="let card of adminHodLikeCards">
-        <div class="card summary-card h-100 shadow-sm">
-          <div class="card-body">
-            <h5><i [class]="card.icon + ' me-2 ' + (card.colorClass || 'text-success')"></i>{{ card.title }}</h5>
-            <p class="fs-5 fw-semibold">{{ card.value }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="row g-4 mb-4">
-      <div class="col-md-3" *ngFor="let card of adminBursarLikeCards">
-        <div class="card summary-card h-100 shadow-sm border-start">
-          <div class="card-body">
-            <h6><i [class]="card.icon + ' me-2 ' + (card.colorClass || 'text-primary')"></i>{{ card.title }}</h6>
-            <p class="fs-5 fw-bold mb-0">{{ card.value }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-    </div>
-
-
-</div>
