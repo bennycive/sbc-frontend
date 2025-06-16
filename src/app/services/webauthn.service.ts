@@ -14,6 +14,7 @@ export class WebauthnService {
       this.http.get(`${environment.apiBaseUrl}/users/mfa/register/options/`)
     );
 
+    // Decode challenge and user ID
     options.challenge = this._bufferDecode(options.challenge);
     options.user.id = this._bufferDecode(options.user.id);
 
@@ -24,6 +25,7 @@ export class WebauthnService {
 
     return await firstValueFrom(
       this.http.post(`${environment.apiBaseUrl}/users/mfa/register/complete/`, credentialJSON, { withCredentials: true })
+      
     );
   }
 
@@ -48,15 +50,20 @@ export class WebauthnService {
     );
   }
 
+  // ✅ Updated to support base64url and standard base64
   private _bufferDecode(value: string): Uint8Array {
-    return Uint8Array.from(atob(value), c => c.charCodeAt(0));
+    // Convert base64url -> base64
+    const base64 = value
+      .replace(/-/g, '+')
+      .replace(/_/g, '/')
+      .padEnd(Math.ceil(value.length / 4) * 4, '=');
+    return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
   }
 
   private _arrayBufferToBase64(buffer: ArrayBuffer): string {
     let binary = '';
     const bytes = new Uint8Array(buffer);
-    const len = bytes.byteLength;
-    for (let i = 0; i < len; i++) {
+    for (let i = 0; i < bytes.byteLength; i++) {
       binary += String.fromCharCode(bytes[i]);
     }
     return btoa(binary);
@@ -67,10 +74,6 @@ export class WebauthnService {
     return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   }
 
-  /**
-   * Serializes PublicKeyCredential into a JSON-friendly format.
-   * Recursively handles ArrayBuffers and nested objects.
-   */
   private _serializePublicKeyCredential(cred: any): any {
     if (!cred) return cred;
 
@@ -94,4 +97,6 @@ export class WebauthnService {
 
     return cred;
   }
+
+
 }

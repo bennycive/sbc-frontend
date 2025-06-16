@@ -32,18 +32,8 @@
       </div>
     </div>
 
-  <!-- <div *ngIf="currentUserRole === 'hod'">
-    <div class="row g-4 mb-4">
-      <div class="col-md-4" *ngFor="let card of hodSummaryCards">
-        <div class="card summary-card h-100 shadow-sm">
-          <div class="card-body">
-            <h5><i [class]="card.icon + ' me-2 ' + (card.colorClass || 'text-success')"></i>{{ card.title }}</h5>
-            <p class="fs-5 fw-semibold">{{ card.value }}</p>
-          </div>
-        </div>
-      </div>
-    </div> -->
-
+  <div *ngIf="currentUserRole === 'hod'">
+   
     <div class="card mb-4">
       <div class="card-header">Transcript Requests for Verification</div>
       <div class="card-body p-0">
