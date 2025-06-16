@@ -122,22 +122,54 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     Chart.register(...registerables);
   }
 
+  async checkBiometricRegistration(): Promise<void> {
+    console.log('checkBiometricRegistration: Initiating biometric check...');
+    try {
+      const response = await this.http.get<{ biometric_registered: boolean }>(
+        'http://localhost:8000/api/users/webauthn/registered/',
+        { withCredentials: true }
+      ).toPromise();
+
+      console.log('checkBiometricRegistration: API Response:', response);
+
+      if (this.user && response) {
+        this.user.biometric_setup_complete = response.biometric_registered;
+        console.log('checkBiometricRegistration: user.biometric_setup_complete set to:', this.user.biometric_setup_complete);
+        this.authService.updateUser(this.user); // Update user in AuthService localStorage cache
+        console.log('checkBiometricRegistration: User object updated in AuthService.');
+      } else {
+        console.warn('checkBiometricRegistration: User object or API response is null/undefined.');
+      }
+    } catch (error) {
+      console.error('checkBiometricRegistration: Error checking biometric registration:', error);
+      // Even if there's an error, assume not registered to be safe
+      if (this.user) {
+        this.user.biometric_setup_complete = false;
+        this.authService.updateUser(this.user); // Persist this 'false' status
+        console.log('checkBiometricRegistration: Setting biometric_setup_complete to false due to error.');
+      }
+    }
+  }
+
   ngOnInit(): void {
     this.formattedDate = this.getFormattedDate();
-    this.user = this.authService.getUser();
+    this.user = this.authService.getUser(); // Get user from cache/local storage initially
+
+    console.log('ngOnInit: Initial user object from AuthService:', this.user);
+
 
     if (this.user && this.user.id) {
       this.currentUserRole = this.user.role;
       this.loadDashboardData();
     } else {
-      console.error("Dashboard: Logged in user or user ID not found from AuthService.");
-      // Consider redirecting to login: this.router.navigate(['/login']);
+      console.error("Dashboard: Logged in user or user ID not found from AuthService. Redirecting to login...");
+      this.router.navigate(['/login']); // Consider redirecting to login if no user
     }
   }
 
   ngAfterViewInit(): void {
     if (this.currentUserRole && !['student'].includes(this.currentUserRole)) {
-       this.renderChart();
+      this.renderChart();
     }
   }
 
@@ -149,12 +181,29 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   loadDashboardData(): void {
-    if (!this.user || !this.user.id) return;
+    if (!this.user || !this.user.id) {
+      console.warn("loadDashboardData: No user or user ID, cannot load data.");
+      this.loading = false;
+      return;
+    }
 
     this.loading = true; // Show preloader
 
     if (this.currentUserRole === 'student') {
-      this.fetchStudentDashboardData(this.user.id);
+      // First, check biometric registration
+      this.checkBiometricRegistration().then(() => {
+        // After biometric check, re-fetch the user object to ensure it's updated
+        this.user = this.authService.getUser();
+        console.log('loadDashboardData: User object after biometric check and re-fetch:', this.user);
+        // Then, fetch student dashboard data
+        this.fetchStudentDashboardData(this.user!.id);
+      }).catch(error => {
+        console.error('loadDashboardData: Error during biometric check before loading student data:', error);
+        // Still proceed to fetch other student data even if biometric check fails
+        // Re-fetch user to ensure the biometric_setup_complete status (even if false) is updated.
+        this.user = this.authService.getUser();
+        this.fetchStudentDashboardData(this.user!.id);
+      });
     } else {
       this.fetchCombinedRequests().subscribe((combinedRequests) => {
         switch (this.currentUserRole) {
@@ -293,22 +342,22 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       let lName = user.last_name || item.user_last_name || item.last_name;
 
       if (fName && lName) {
-          studentName = `${fName} ${lName}`;
+        studentName = `${fName} ${lName}`;
       } else if (fName) {
-          studentName = fName;
+        studentName = fName;
       } else if (lName) {
-          studentName = lName;
+        studentName = lName;
       } else if (user.username) {
-          studentName = user.username;
+        studentName = user.username;
       } else if (item.user_username) {
-          studentName = item.user_username;
+        studentName = item.user_username;
       } else {
-          studentName = 'N/A';
+        studentName = 'N/A';
       }
 
       let program = item.programme || item.user_program || user.program || user.department || 'N/A';
       if (requestTypeOverride === 'provisional' && item.programme) {
-          program = item.programme;
+        program = item.programme;
       }
 
       return {
@@ -370,51 +419,57 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     const month = this.datePipe.transform(date, 'MMMM');
     const year = date.getFullYear();
     const getOrdinal = (n: number): string => {
-        if (n > 3 && n < 21) return 'th';
-        switch (n % 10) {
-          case 1: return 'st';
-          case 2: return 'nd';
-          case 3: return 'rd';
-          default: return 'th';
-        }
+      if (n > 3 && n < 21) return 'th';
+      switch (n % 10) {
+        case 1: return 'st';
+        case 2: return 'nd';
+        case 3: return 'rd';
+        default: return 'th';
+      }
     };
     return `<strong>${dayName}</strong>, ${month} ${day}<sup>${getOrdinal(day)}</sup>, ${year}`;
+
   }
 
   fetchStudentDashboardData(userId: number): void {
     const apiUrl = `${this.apiEndpoints.transcriptCertificateRequests}?user=${userId}`;
-    console.log('Fetching student requests from URL:', apiUrl); // Log the URL
+    console.log('fetchStudentDashboardData: Fetching student requests from URL:', apiUrl);
 
     const requestsSub = this.http.get<TranscriptRequestItem[]>(apiUrl)
       .pipe(
         map(requests => {
-          // This mapping happens on the data *received* from the backend.
-          // If the backend doesn't filter, 'requests' will be all requests.
-          console.log(`Received ${requests.length} requests for student ID ${userId}. If this is all requests, backend filtering for '?user=${userId}' is not working.`);
+          console.log(`fetchStudentDashboardData: Received ${requests.length} requests for student ID ${userId}.`);
+
           const totalRequests = requests.length;
           const readyCount = requests.filter(
             req => req.hod_verified && req.bursar_verified && req.exam_officer_approved
           ).length;
-          return { totalRequests, readyCount };
+
+          // Re-read the user object from AuthService just before determining biometric status for the card
+          // This ensures we get the latest state after checkBiometricRegistration has potentially updated it.
+          const currentUser = this.authService.getUser();
+          console.log('fetchStudentDashboardData: Current user object from AuthService before determining biometric status:', currentUser);
+          const biometricStatus = currentUser?.biometric_setup_complete === true ? 'Registered' : 'Pending';
+          console.log('fetchStudentDashboardData: Determined Biometric Status for card:', biometricStatus);
+
+          return { totalRequests, readyCount, biometricStatus };
         }),
         catchError(error => {
-          console.error(`Error fetching student transcript/certificate requests for user ${userId}:`, error);
-          return of({ totalRequests: 0, readyCount: 0 });
+          console.error(`fetchStudentDashboardData: Error fetching student transcript/certificate requests for user ${userId}:`, error);
+          // Default to pending if there's an error fetching requests or checking biometric
+          const currentUser = this.authService.getUser(); // Try to get the latest user even on error
+          const biometricStatus = currentUser?.biometric_setup_complete === true ? 'Registered' : 'Pending';
+          console.log('fetchStudentDashboardData: Determined Biometric Status for card (on error):', biometricStatus);
+          return of({ totalRequests: 0, readyCount: 0, biometricStatus: biometricStatus });
         })
       )
       .subscribe(data => {
-        let biometricStatus = 'Pending';
-        if (this.user?.biometric_setup_complete === true) {
-            biometricStatus = 'Completed';
-        } else if (this.user?.profile?.nida) {
-            biometricStatus = 'Completed';
-        }
-
         this.studentSummaryCards = [
           { title: 'My Requests', value: data.totalRequests, icon: 'bi bi-journal-text', colorClass: 'text-primary' },
           { title: 'Certificates Ready', value: data.readyCount, icon: 'bi bi-file-earmark-check', colorClass: 'text-primary' },
-          { title: 'Biometric Status', value: biometricStatus, icon: 'bi bi-fingerprint', colorClass: 'text-primary' }
+          { title: 'Biometric Status', value: data.biometricStatus, icon: 'bi bi-fingerprint', colorClass: 'text-primary' }
         ];
+
         this.loading = false; // Hide preloader
       });
     this.subscriptions.add(requestsSub);
@@ -442,7 +497,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         Swal.fire('Error', 'Failed to update profile', 'error');
       }
     });
-    
+
   }
 
   fetchHodDashboardData(): void {
@@ -506,19 +561,19 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     const financialsSub = this.http.get<any[]>(`${this.apiEndpoints.bursarVerifiedFinancials}?bursar_verified=true&limit=10`)
       .pipe(
         map(records => records.map((rec): TableRow => {
-            let studentName = 'N/A';
-            if (typeof rec.user === 'object' && rec.user !== null) {
-                 studentName = `${rec.user.first_name || ''} ${rec.user.last_name || ''}`.trim() || rec.user.username || 'Unknown';
-            } else if (rec.student_name) {
-                 studentName = rec.student_name;
-            } else if (rec.user_id || rec.user) {
-                 studentName = `User ID: ${rec.user_id || rec.user}`;
-            }
-            return {
-                student: studentName,
-                amount: this.datePipe.transform(rec.amount_paid || rec.amount, 'currency', 'USD', 'symbol') || '$0.00',
-                date: this.datePipe.transform(rec.payment_date || rec.date, 'mediumDate') || 'N/A'
-            };
+          let studentName = 'N/A';
+          if (typeof rec.user === 'object' && rec.user !== null) {
+            studentName = `${rec.user.first_name || ''} ${rec.user.last_name || ''}`.trim() || rec.user.username || 'Unknown';
+          } else if (rec.student_name) {
+            studentName = rec.student_name;
+          } else if (rec.user_id || rec.user) {
+            studentName = `User ID: ${rec.user_id || rec.user}`;
+          }
+          return {
+            student: studentName,
+            amount: this.datePipe.transform(rec.amount_paid || rec.amount, 'currency', 'USD', 'symbol') || '$0.00',
+            date: this.datePipe.transform(rec.payment_date || rec.date, 'mediumDate') || 'N/A'
+          };
         })),
         catchError((err) => {
           console.error("Error fetching bursar financials:", err);
@@ -558,11 +613,11 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   renderChart(): void {
     if (!this.requestChartCanvas || !this.requestChartCanvas.nativeElement) {
-        console.warn('Chart canvas not ready for rendering in renderChart.');
-        if (document.readyState === "complete") {
-             setTimeout(() => this.renderChart(), 100);
-        }
-        return;
+      console.warn('Chart canvas not ready for rendering in renderChart.');
+      if (document.readyState === "complete") {
+        setTimeout(() => this.renderChart(), 100);
+      }
+      return;
     }
     const ctx = this.requestChartCanvas.nativeElement.getContext('2d');
     if (!ctx) {
@@ -573,7 +628,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.chartInstance.destroy();
     }
 
-    this.http.get<{labels: string[], data: number[]}>(`${this.apiEndpoints.requestTrendsChart}?filter=${this.filterBy}`)
+    this.http.get<{ labels: string[], data: number[] }>(`${this.apiEndpoints.requestTrendsChart}?filter=${this.filterBy}`)
       .pipe(catchError(() => of({ labels: ['No Data Available'], data: [0] })))
       .subscribe(chartData => {
         this.chartInstance = new Chart(ctx, {
@@ -593,8 +648,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-              y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#eaecef'} },
-              x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#eaecef'} }
+              y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#eaecef' } },
+              x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#eaecef' } }
             },
             plugins: { legend: { labels: { color: '#eaecef' } } }
           }
@@ -606,8 +661,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.currentUserRole && !['student'].includes(this.currentUserRole)) {
       this.renderChart();
     }
-  }
 
+  }
 
 }
 

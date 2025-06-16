@@ -31,6 +31,10 @@ export class AuthService {
     return user ? JSON.parse(user) : null;
   }
 
+  updateUser(user: any): void {
+    localStorage.setItem('user', JSON.stringify(user));
+  }
+
   getToken() {
     return localStorage.getItem('access_token');
   }
@@ -45,4 +49,5 @@ export class AuthService {
   }
 
   
+
 }

@@ -85,6 +85,7 @@ export class UsersComponent {
     } else {
       this.passwordStrength = 'Weak';
     }
+    
 
   }
 
@@ -105,10 +106,11 @@ export class UsersComponent {
 
     } else {
       this.createUser(formData);
-      
+
     }
 
   }
+
 
   cleanFormData(data: any): any {
     const cleanedData: any = {};
@@ -127,6 +129,8 @@ export class UsersComponent {
       },
       error: (err) => this.handleFormError(err, 'updating')
     });
+
+
   }
 
   createUser(data: any) {
@@ -151,6 +155,7 @@ export class UsersComponent {
     } else {
       Swal.fire('Error', `Unexpected error occurred while ${action} the user.`, 'error');
     }
+
   }
 
   resetForm() {
@@ -187,8 +192,7 @@ export class UsersComponent {
       confirmButtonText: 'Yes, delete it!',
     }).then(result => {
       if (result.isConfirmed) {
-        // FIX 2: Corrected the typo from apiBase_url to apiBaseUrl
-        this.http.delete(`<span class="math-inline">\{environment\.apiBaseUrl\}/users/users/</span>{user.id}/`).subscribe(() => {
+        this.http.delete(`${environment.apiBaseUrl}/users/users/${user.id}/`).subscribe(() => {
           this.loadUsers();
           Swal.fire('Deleted!', 'User has been deleted.', 'success');
         });
