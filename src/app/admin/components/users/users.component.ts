@@ -37,6 +37,8 @@ export class UsersComponent {
   users: User[] = [];
   filteredUsers: User[] = [];
 
+  roleFilter: string = '';
+
   selectedUserId: number | null = null;
   editingIndex: number | null = null;
   passwordStrength: string = '';
@@ -85,7 +87,7 @@ export class UsersComponent {
     } else {
       this.passwordStrength = 'Weak';
     }
-    
+
 
   }
 
@@ -95,6 +97,7 @@ export class UsersComponent {
       const strongPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
       return strongPattern.test(password) ? null : { weakPassword: true };
     };
+
   }
 
   onSubmit() {
@@ -109,6 +112,7 @@ export class UsersComponent {
 
     }
 
+    
   }
 
 
@@ -210,7 +214,6 @@ export class UsersComponent {
     // The logoPath variable from the import statement is used here
     doc.addImage(logoPath, 'PNG', 15, 10, logoWidth, logoHeight);
 
-
     const pageWidth = doc.internal.pageSize.getWidth();
     doc.setFont('times', 'bold');
     doc.setFontSize(16);
@@ -222,7 +225,9 @@ export class UsersComponent {
 
     doc.setFont('times', 'bold');
     doc.setFontSize(14);
-    doc.text('USER REPORT', pageWidth / 2, 38, { align: 'center' });
+    // Set report title based on roleFilter with full capitalization
+    const reportTitle = this.roleFilter ? `${this.roleFilter.toUpperCase()} REPORT` : 'USER REPORT';
+    doc.text(reportTitle, pageWidth / 2, 38, { align: 'center' });
 
     // --- Add Generated Time ---
     const generatedTime = new Date().toLocaleString(); // e.g., "6/15/2025, 1:46:29 AM"
@@ -233,12 +238,16 @@ export class UsersComponent {
     const reportMargin = 15;
     doc.text(`Generated on: ${generatedTime}`, pageWidth - reportMargin, 46, { align: 'right' });
 
+    // Filter users by roleFilter if set
+    const usersToReport = this.roleFilter
+      ? this.filteredUsers.filter(u => u.role === this.roleFilter)
+      : this.filteredUsers;
 
     // --- Table Section ---
     autoTable(doc, {
       startY: 50,
       head: [['Name', 'Username', 'Email', 'Role', 'Department']],
-      body: this.filteredUsers.map(u => [
+      body: usersToReport.map(u => [
         `${u.first_name || ''} ${u.last_name || ''}`.trim(),
         u.username,
         u.email,
@@ -254,7 +263,6 @@ export class UsersComponent {
         textColor: [255, 255, 255],
         fontStyle: 'bold',
       },
-
     });
 
     // --- Footer with Double Line and Page Numbers ---
@@ -277,7 +285,6 @@ export class UsersComponent {
       const textWidth = doc.getTextWidth(text);
       doc.text(text, (pageWidth - textWidth) / 2, pageHeight - 10);
     }
-
 
     doc.save('user_report.pdf');
 

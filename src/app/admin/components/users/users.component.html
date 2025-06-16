@@ -150,6 +150,13 @@
   <!-- Report Generation Button -->
   <div class="card mb-4 mt-4">
     <div class="card-body">
+      <div class="mb-3">
+        <label for="roleFilter" class="form-label">Filter by Role</label>
+        <select id="roleFilter" class="form-select" [(ngModel)]="roleFilter" name="roleFilter">
+          <option value="">All</option>
+          <option *ngFor="let r of roles" [value]="r">{{ r | titlecase }}</option>
+        </select>
+      </div>
       <button class="btn btn-success" (click)="generatePdfReport()">Generate PDF Report</button>
     </div>
   </div>
