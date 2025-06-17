@@ -76,7 +76,7 @@
           <tr>
             <th>#</th>
             <th>Student</th>
-            <th>Program</th>
+            <!-- <th>Program</th> -->
             <th>Type</th>
             <th>Submitted</th>
             <th>Status</th>
@@ -91,7 +91,7 @@
           <tr *ngFor="let r of filteredRecords; let i = index">
             <td>{{ i + 1 }}</td>
             <td>{{ r.student_name }}</td>
-            <td>{{ r.program }}</td>
+            <!-- <td>{{ r.program }}</td> -->
             <td>{{ r.request_type | titlecase }}</td>
             <td>{{ r.submitted_at | date:'mediumDate' }}</td>
             <td>
@@ -114,7 +114,7 @@
   <div *ngIf="record" class="card p-4 shadow-sm mt-4">
     <h4>Student Information</h4>
     <p><strong>Name:</strong> {{ record.studentDetails?.name }}</p>
-    <p><strong>Program:</strong> {{ record.studentDetails?.program }}</p>
+    <!-- <p><strong>Program:</strong> {{ record.studentDetails?.program }}</p> -->
     <p *ngIf="record.fullProfile?.registration_number"><strong>Registration Number:</strong> {{
       record.fullProfile?.registration_number }}</p>
     <p><strong>Request Type:</strong> {{ record.studentDetails?.request_type | titlecase }}</p>

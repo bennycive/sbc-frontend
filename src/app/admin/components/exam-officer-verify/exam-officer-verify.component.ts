@@ -77,6 +77,7 @@ export class ExamOfficerVerifyComponent implements OnInit {
       ...item,
       request_type: type,
       student_name: `${item.user?.first_name || item.user_first_name || ''} ${item.user?.last_name || item.user_last_name || ''}`.trim() || 'N/A',
+      user_name:   `${item.user?.username ||''}`,
       program: item.user?.profile?.program || item.programme || item.user_program || 'N/A',
       submitted_at: new Date(item.submitted_at),
       user_id: item.user?.id || item.user,
@@ -202,11 +203,11 @@ export class ExamOfficerVerifyComponent implements OnInit {
 
     autoTable(doc, {
       startY: 50,
-      head: [['#', 'Student Name', 'Program', 'Request Type', 'Submitted', 'Status']],
+      head: [['#', 'Student Name','Username', 'Request Type', 'Submitted', 'Status']],
       body: this.filteredRecords.map((r, i) => [
         i + 1,
         r.student_name,
-        r.program,
+        r.user_name,
         r.request_type.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
         new Date(r.submitted_at).toLocaleDateString(),
         this.getRequestStatus(r).text
@@ -247,7 +248,7 @@ export class ExamOfficerVerifyComponent implements OnInit {
       });
     });
 
-    
+
   }
 
   printCertificate() {
@@ -261,5 +262,7 @@ export class ExamOfficerVerifyComponent implements OnInit {
     if (r.hod_verified && r.bursar_verified) return { text: 'Pending Exam Officer', class: 'bg-info text-dark' };
     if (r.hod_verified) return { text: 'Pending Bursar', class: 'bg-primary' };
     return { text: 'Pending HOD', class: 'bg-warning text-dark' };
-  };
+  }
+
+
 }
